@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bi lăn ngẫu nhiên</title>
+<style>
+:root{--bg:#f6f5f1;--fg:#1d1d1b;--card:#fff;--line:#d8d5cc;--acc:#d9480f;--peg:#444;--ball:#d9480f;--bin:#e8e5db;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17171a;--fg:#ececec;--card:#222226;--line:#3a3a40;--acc:#ff922b;--peg:#aaa;--ball:#ff922b;--bin:#2c2c32}}
+:root[data-theme="dark"]{--bg:#17171a;--fg:#ececec;--card:#222226;--line:#3a3a40;--acc:#ff922b;--peg:#aaa;--ball:#ff922b;--bin:#2c2c32}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100%}
+main{max-width:620px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem;margin:4px 0 12px;text-align:center}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.row{display:flex;align-items:center;gap:10px;margin:6px 0}
+.row label{flex:0 0 120px;font-size:.95rem}
+.row input[type=range]{flex:1;accent-color:var(--acc)}
+.row output{flex:0 0 44px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.btns{display:flex;gap:8px;margin-top:10px}
+button{flex:1;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);font-family:inherit;font-size:.95rem;cursor:pointer}
+button.main{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+button:disabled,input:disabled{opacity:.5;cursor:not-allowed}
+canvas{width:100%;display:block;border:2px solid var(--fg);border-radius:6px;background:var(--card)}
+[hidden]{display:none!important}
+select{flex:1;padding:8px;font-family:inherit;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);font-size:.95rem}
+input[type=color]{flex:1;height:36px;padding:2px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer}
+#kq{text-align:center;margin:10px 0 0;font-size:1.05rem;min-height:1.6em}
+</style>
+</head>
+<body>
+<main>
+<h1>Bi lăn ngẫu nhiên</h1>
+<div class="panel">
+  <div class="row"><label for="n">Số ô</label><input id="n" type="range" min="3" max="15" value="5"><output id="nv">5</output></div>
+  <div class="row"><label for="s">Tốc độ rơi</label><input id="s" type="range" min="0.5" max="4" step="0.5" value="1"><output id="sv">1x</output></div>
+  <div class="row"><label for="sm">Vị trí thả</label><select id="sm"><option value="rand">Ngẫu nhiên</option><option value="pick">Tự chọn</option></select></div>
+  <div class="row" id="pr"><label for="sx">Vị trí ngang</label><input id="sx" type="range" min="0" max="100" value="50"><output id="sxv">50%</output></div>
+  <div class="row"><label for="th">Giao diện</label><select id="th"><option value="auto">Theo hệ thống</option><option value="light">Sáng</option><option value="dark">Tối</option></select></div>
+  <div class="row"><label for="ac">Màu nhấn</label><input id="ac" type="color" value="#d9480f"><button type="button" id="acr" style="flex:0 0 auto;padding:6px 12px">Mặc định</button></div>
+  <div class="btns"><button class="main" id="go">Bắt đầu</button><button id="reset">Xóa thống kê</button></div>
+  <p id="kq"></p>
+</div>
+<canvas id="c"></canvas>
+</main>
+<script>
+const W=600,H=760,cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+const dpr=Math.min(window.devicePixelRatio||1,2);
+cv.width=W*dpr;cv.height=H*dpr;
+let n=5,speed=1,pegs=[],counts=[],ball=null,geo={},running=false,last=0;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function build(){
+  const sp=W/n,binTop=H-120,top=110,bottom=binTop-45;
+  const gap=clamp(sp*.9,42,80),rows=Math.max(3,Math.floor((bottom-top)/gap)+1);
+  geo={sp,binTop,r:clamp(sp*.2,5,12),pr:clamp(sp*.07,3,5)};
+  pegs=[];
+  for(let i=0;i<rows;i++){
+    const y=top+i*gap;
+    if(i%2==0)for(let k=0;k<n;k++)pegs.push({x:sp*(k+.5),y});
+    else for(let k=1;k<n;k++)pegs.push({x:sp*k,y});
+  }
+  counts=new Array(n).fill(0);
+}
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function draw(){
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+  const {sp,binTop,r,pr}=geo,fg=css('--fg');
+  ctx.fillStyle=css('--bin');
+  ctx.fillRect(0,binTop,W,H-binTop);
+  ctx.strokeStyle=fg;ctx.lineWidth=3;
+  for(let k=1;k<n;k++){ctx.beginPath();ctx.moveTo(sp*k,binTop);ctx.lineTo(sp*k,H);ctx.stroke()}
+  ctx.fillStyle=fg;ctx.textAlign='center';
+  for(let k=0;k<n;k++){
+    ctx.font='600 '+clamp(sp*.4,14,26)+'px system-ui';
+    ctx.fillText(k+1,sp*(k+.5),H-18);
+    ctx.font=clamp(sp*.3,11,16)+'px system-ui';
+    ctx.globalAlpha=.7;ctx.fillText(counts[k],sp*(k+.5),binTop+26);ctx.globalAlpha=1;
+  }
+  ctx.fillStyle=css('--peg');
+  for(const p of pegs){ctx.beginPath();ctx.arc(p.x,p.y,pr,0,7);ctx.fill()}
+  ctx.fillStyle=css('--acc');
+  if(ball){ctx.beginPath();ctx.arc(ball.x,ball.y,r,0,7);ctx.fill()}
+  else if($('sm').value==='pick'){
+    const px=r+$('sx').value/100*(W-2*r);
+    ctx.globalAlpha=.45;ctx.beginPath();ctx.arc(px,40,r,0,7);ctx.fill();ctx.globalAlpha=1;
+    ctx.beginPath();ctx.moveTo(px-6,62);ctx.lineTo(px+6,62);ctx.lineTo(px,74);ctx.fill();
+  }
+}
+function step(dt){
+  const b=ball,{sp,binTop,r,pr}=geo,g=1100;
+  b.vy+=g*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
+  if(b.y+r>binTop && !b.bin) b.bin=clamp(Math.floor(b.x/sp),0,n-1);
+  if(b.bin!==undefined){
+    const l=b.bin*sp+r,rr=(b.bin+1)*sp-r;
+    if(b.x<l){b.x=l;b.vx=Math.abs(b.vx)*.3}
+    if(b.x>rr){b.x=rr;b.vx=-Math.abs(b.vx)*.3}
+    b.vx*=.98;
+    if(b.y>H-r-4){b.y=H-r-4;finish();return}
+  }else{
+    if(b.x<r){b.x=r;b.vx=Math.abs(b.vx)}
+    if(b.x>W-r){b.x=W-r;b.vx=-Math.abs(b.vx)}
+    for(const p of pegs){
+      const dx=b.x-p.x,dy=b.y-p.y,d=Math.hypot(dx,dy),m=r+pr;
+      if(d<m){
+        const nx=dx/(d||1),ny=dy/d||-1;
+        b.x=p.x+nx*m;b.y=p.y+(dy/(d||1))*m;
+        if(b.last!==p){
+          const dir=Math.random()<.5?-1:1;       // ngẫu nhiên trái/phải
+          b.vx=dir*sp*(1.2+Math.random()*.8);
+          b.vy=Math.abs(b.vy)*.3;
+          b.last=p;
+        }
+      }
+    }
+  }
+}
+function finish(){
+  counts[ball.bin]++;
+  $('kq').innerHTML='Bi rơi vào ô số <b>'+(ball.bin+1)+'</b>';
+  ball=null;running=false;setLock(false);draw();
+}
+function loop(t){
+  if(!running)return;
+  const dt=Math.min((t-last)/1000,.05);last=t;
+  const sub=Math.ceil(speed*2),h=dt*speed/sub;
+  for(let i=0;i<sub&&ball;i++)step(h);
+  draw();
+  if(running)requestAnimationFrame(loop);
+}
+function setLock(v){['n','s','sm','sx','go'].forEach(i=>$(i).disabled=v)}
+$('go').onclick=()=>{
+  if(running)return;
+  const rr=geo.r,sx=$('sm').value==='pick'?rr+$('sx').value/100*(W-2*rr):rr+Math.random()*(W-2*rr);
+  ball={x:sx+(Math.random()-.5)*2,y:40,vx:0,vy:0};
+  $('kq').textContent='Bi đang rơi...';
+  running=true;setLock(true);last=performance.now();requestAnimationFrame(loop);
+};
+$('reset').onclick=()=>{if(running)return;counts.fill(0);$('kq').textContent='';draw()};
+$('n').oninput=e=>{n=+e.target.value;$('nv').textContent=n;build();$('kq').textContent='';draw()};
+$('s').oninput=e=>{speed=+e.target.value;$('sv').textContent=speed+'x'};
+function upd(){$('pr').hidden=$('sm').value!=='pick';if(!running)draw()}
+$('sm').onchange=upd;
+$('sx').oninput=e=>{$('sxv').textContent=e.target.value+'%';draw()};
+cv.onclick=e=>{
+  if(running)return;
+  const b=cv.getBoundingClientRect(),v=clamp(Math.round((e.clientX-b.left)/b.width*100),0,100);
+  $('sm').value='pick';$('sx').value=v;$('sxv').textContent=v+'%';upd();
+};
+$('th').onchange=e=>{
+  const v=e.target.value,d=document.documentElement;
+  if(v==='auto')d.removeAttribute('data-theme');else d.dataset.theme=v;
+  if(!d.style.getPropertyValue('--acc'))$('ac').value=css('--acc');
+  draw();
+};
+$('ac').oninput=e=>{document.documentElement.style.setProperty('--acc',e.target.value);draw()};
+$('acr').onclick=()=>{document.documentElement.style.removeProperty('--acc');$('ac').value=css('--acc');draw()};
+build();$('ac').value=css('--acc');upd();
+</script>
+</body>
+</html>
