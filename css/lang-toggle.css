@@ -1,0 +1,9 @@
+/* Nút chuyển ngôn ngữ VI / EN (dùng lại kiểu .seg) */
+.seg.lang{flex-wrap:nowrap;margin-right:4px}
+.seg.lang button{padding:5px 9px;font-size:12px;font-weight:500;letter-spacing:.3px}
+@media (max-width:480px){
+  .seg.lang{margin-right:0}
+  .seg.lang button{padding:4px 7px;font-size:11px}
+  .tools{gap:2px}
+  .tg{margin-right:2px}
+}

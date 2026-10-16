@@ -1,0 +1,47 @@
+'use strict';
+/* English – trang Event (bản tin tuần, lịch trình, nhắc nhở, tin ghim, trực nhật) */
+I18N.add('en',{
+  'Bản tin tuần':'Weekly bulletin','Bấm để xác nhận bạn đã đọc bản tin này.':'Click to confirm you have read this bulletin.',
+  'Mỗi tài khoản bấm một lần. Nút mở lại khi tin được cập nhật.':'Each account confirms once. The button reopens when the bulletin is updated.',
+  'Bạn đã đọc':'You have read this','Cả lớp đã đọc.':'The whole class has read it.',
+  'Chưa có thông báo cho tuần này. Bấm Thêm thông tin để lên lịch trước.':'No announcements for this week yet. Click Add info to schedule ahead.',
+  'Tuần này không có thông báo nào.':'No announcements this week.',
+  'Tuần đã qua, chỉ xem, không chỉnh sửa được.':'Past week: view only, cannot be edited.',
+  'Chế độ chỉ đọc.':'Read-only mode.','Chưa có mô tả.':'No description yet.',
+  'Quan trọng':'Important','Cấp thiết':'Urgent',
+  'Nhắc nhở và việc cần làm':'Reminders and to-dos','Nhắc nhở chung':'General reminders',
+  'Không có nhắc nhở.':'No reminders.','Không có tin ghim.':'No pinned posts.',
+  'Tin ghim quan trọng':'Important pinned posts','Trực nhật trong tuần':'Duty roster this week',
+  'Quét lớp':'Sweep the classroom','Tưới cây':'Water the plants',
+  'Đính kèm':'Attachment','Không có lịch trình.':'No schedule.',
+  'Thêm thông tin':'Add info','Phân loại tin':'Post category','Lịch trình trong tuần':'Weekly schedule',
+  'Tin ghim':'Pinned post','Nhắc nhở':'Reminder','Loại sự kiện':'Event type','Tuần áp dụng':'Applies to week',
+  'Đính kèm (ảnh, PDF)':'Attachment (image, PDF)','Phạm vi, địa điểm, lưu ý':'Scope, location, notes',
+  'Kiểm tra 15 phút môn Sinh học':'15-minute Biology quiz',
+  'Nhập tiêu đề trước khi đăng.':'Enter a title before posting.','Đăng tin':'Post',
+  'Đã đăng tin, trạng thái đã đọc được đặt lại':'Posted; read status has been reset',
+  'Tìm kiếm':'Search','Tuần trước':'Previous week','Tuần sau':'Next week',
+  /* dữ liệu mẫu */
+  'Chào cờ đầu tuần':'Monday flag ceremony',
+  'Sinh hoạt lớp và phổ biến kế hoạch cắm trại':'Class meeting and camping plan briefing',
+  'Tập trung sân trường lúc 7h00, mặc đồng phục.':'Gather in the schoolyard at 7:00, wear uniform.',
+  'Tập trung sân trường lúc 7h00.':'Gather in the schoolyard at 7:00.',
+  'Ban cán sự trình bày kế hoạch, cả lớp góp ý.':'The class officers present the plan; everyone gives feedback.',
+  'Kiểm tra 15 phút môn Toán':'15-minute Math quiz',
+  'Phạm vi: chương 2, bài 5 đến bài 7. Không dùng tài liệu.':'Scope: chapter 2, lessons 5 to 7. Closed book.',
+  'Kiểm tra 15 phút môn Hoá học':'15-minute Chemistry quiz',
+  'Chương 1, đại số.':'Chapter 1, algebra.',
+  'Học bù Toán (tiết 1-2)':'Math make-up class (periods 1-2)',
+  'Phòng 413, mang theo vở bài tập.':'Room 413, bring your workbook.',
+  'Nộp bài tập lớn môn Ngữ Văn':'Submit the Literature term paper',
+  'Nộp bản in cho cô trước tiết 3.':'Hand the printed copy to the teacher before period 3.',
+  'Tham quan bảo tàng Lịch sử':'History museum visit',
+  'Tập trung 7h30 trước cổng trường.':'Gather at 7:30 in front of the school gate.',
+  'Lịch thi Giữa kỳ HK1, bắt đầu từ ngày 26/10':'Semester 1 midterm exam schedule, starting 26/10',
+  'Chi tiết lịch thi và danh sách phòng thi.':'Exam schedule details and room list.',
+  'Hoàn thành khảo sát học tập trực tuyến':'Complete the online study survey',
+  'Nộp quỹ lớp trước ngày 16/10':'Pay the class fund before 16/10',
+  'Thu bài kiểm tra tuần trước':"Collect last week's test papers"
+},[
+  [/^Đã đọc: (.+)$/,function(n){return 'Read: '+n}]
+]);

@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/sidebar.css">
   <link rel="stylesheet" href="css/topbar.css">
+  <link rel="stylesheet" href="css/lang-toggle.css">
   <link rel="stylesheet" href="css/controls.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/page-event.css">
@@ -49,6 +50,7 @@
     <div class="top">
       <div class="crumb" id="crumb"></div>
       <div class="tools">
+        <span class="seg lang" id="langTg" role="group" aria-label="Ngôn ngữ / Language" data-no-i18n><button type="button" data-lang="vi" lang="vi" aria-pressed="true" title="Tiếng Việt">VI</button><button type="button" data-lang="en" lang="en" aria-pressed="false" title="English">EN</button></span>
         <button class="tg" id="tg" aria-label="Đổi giao diện sáng hoặc tối" aria-pressed="false"><span class="st" style="left:8px;top:7px"></span><span class="st" style="left:15px;top:16px"></span><span class="st" style="left:22px;top:6px"></span><span class="cl"></span><span class="k"></span></button>
         <div class="anchor">
           <button class="ib" id="bellBtn" aria-label="Thông báo" aria-expanded="false" aria-haspopup="true"></button>
@@ -96,6 +98,17 @@
 <script src="js/pages/settings.js"></script>
 <script src="js/core/router.js"></script>
 <script src="js/core/global-events.js"></script>
+<!-- Đa ngôn ngữ: engine trước, rồi từ điển từng ngôn ngữ/trang (file nạp sau ưu tiên cao hơn) -->
+<script src="js/i18n/engine.js"></script>
+<script src="js/i18n/en-common.js"></script>
+<script src="js/i18n/en-event.js"></script>
+<script src="js/i18n/en-map.js"></script>
+<script src="js/i18n/en-contacts.js"></script>
+<script src="js/i18n/en-groups.js"></script>
+<script src="js/i18n/en-vote.js"></script>
+<script src="js/i18n/en-feedback.js"></script>
+<script src="js/i18n/en-settings.js"></script>
+<script src="js/components/lang-toggle.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

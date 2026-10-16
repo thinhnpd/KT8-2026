@@ -8,4 +8,4 @@ var POSITIONS=['Lớp trưởng','Lớp phó học tập','Lớp phó lao độn
 var ADMIN_POS=['Lớp trưởng','Lớp phó học tập','Bí thư chi đoàn'];
 var STXT={none:'Chưa có ứng viên',zero:'Chưa có phiếu',tie:'Hai ứng viên bằng phiếu'};
 var NAV=[{id:'event',i:'calendar-event',t:'Event'},{id:'map',i:'layout-grid',t:'Class Map'},{id:'contacts',i:'contact',t:'Directory'},{id:'groups',i:'users',t:'Groups'},{id:'vote',i:'vote',t:'Vote'},{id:'feedback',i:'message-circle',t:'Feedback'}];
-var TITLES={event:'Sự kiện',map:'Sơ đồ lớp',contacts:'Danh bạ',groups:'Nhóm học tập',vote:'Bỏ phiếu',feedback:'Phản hồi',settings:'Cài đặt'};
+var TITLES={event:'Event',map:'Class Map',contacts:'Directory',groups:'Groups',vote:'Vote',feedback:'Feedback',settings:'Settings'};
