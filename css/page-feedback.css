@@ -1,0 +1,5 @@
+/* Trang Feedback */
+.fb{display:grid;gap:8px;margin-top:12px}
+.fi{background:var(--pn);border:1px solid var(--bd);border-radius:8px;padding:10px 12px}
+.fi header{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:4px;flex-wrap:wrap}
+.fi header span{color:var(--mu);font-size:12px}

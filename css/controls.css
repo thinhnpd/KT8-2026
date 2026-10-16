@@ -1,0 +1,25 @@
+/* Ô nhập, nút bấm, nhóm nút, checkbox */
+label{display:block;font-size:12px;color:var(--mu);margin:0 0 4px}
+input[type=text],input[type=password],select,textarea{width:100%;height:34px;padding:6px 10px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx)}
+textarea{height:76px;resize:vertical}
+input:disabled,select:disabled{opacity:.65;cursor:not-allowed}
+.err{color:var(--err);font-size:12px;margin-top:4px}
+.frow{display:flex;gap:8px;align-items:flex-end}
+.fg{display:grid;gap:10px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;border:1px solid var(--acc);border-radius:6px;background:var(--acc);color:#fff;font-size:12.5px;white-space:nowrap}
+.btn:hover{filter:brightness(1.08)}
+.btn.gh{background:transparent;color:var(--tx);border-color:var(--bd)}
+.btn.gh:hover{background:var(--hv);filter:none}
+.btn.done{background:transparent;color:var(--acc-t);cursor:default}
+.btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
+.sq{width:32px;height:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--bd);border-radius:6px;background:var(--pn);color:var(--tx);flex:none}
+.sq:hover{border-color:var(--acc);color:var(--acc-t)}
+.ic-btn{border:0;background:none;color:var(--mu);padding:2px;border-radius:4px}
+.ic-btn:hover{color:var(--err)}
+.ic-btn.ed:hover{color:var(--acc-t)}
+.chk{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--mu);margin:0}
+.seg{display:inline-flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:var(--pn);padding:6px 14px;font-size:12.5px;color:var(--mu)}
+.seg button+button{border-left:1px solid var(--bd)}
+.seg button[aria-pressed=true]{background:color-mix(in srgb,var(--acc) 18%,var(--pn));color:var(--acc-t);font-weight:500}

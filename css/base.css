@@ -1,0 +1,32 @@
+/* Nền tảng: reset, biến màu (sáng/tối), kiểu chữ cơ bản.
+   Màu chủ đạo --acc được đổi động theo logo lớp (js/components/theme.js). */
+:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+img{max-width:100%}
+[hidden]:not([hidden=until-found i]){display:none!important}
+
+:root{
+  --font:"Be Vietnam Pro",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --acc:#3D78C0;--acc-t:var(--acc);
+  --page:#E8EBF1;--bg:#F3F5F9;--pn:#FFFFFF;--tx:#1B2433;--mu:#5B6678;--bd:#D9DEE8;--sb:#FFFFFF;--hdr:#EDF0F6;--hv:#F6F8FC;
+  --scrim:rgba(10,14,24,.5);--err:#B42E2D;
+  --r-bg:rgba(226,75,74,.14);--r-tx:#B42E2D;--y-bg:rgba(239,159,39,.2);--y-tx:#8A5A06;
+  --g-bg:rgba(59,170,100,.18);--g-tx:#1F7A48;--b-bg:rgba(55,138,221,.16);--b-tx:#1F64B0;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --page:#090D17;--bg:#0E1320;--pn:#18202F;--tx:#E8EBF2;--mu:#A0A9BB;--bd:#2D3750;--sb:#131A29;--hdr:#202A3F;--hv:#1E2740;
+  --acc-t:color-mix(in srgb,var(--acc) 62%,#fff);--err:#F08A89;--r-tx:#F08A89;--y-tx:#F0B650;--g-tx:#6CCB92;--b-tx:#7DB5EE;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --page:#090D17;--bg:#0E1320;--pn:#18202F;--tx:#E8EBF2;--mu:#A0A9BB;--bd:#2D3750;--sb:#131A29;--hdr:#202A3F;--hv:#1E2740;
+  --acc-t:color-mix(in srgb,var(--acc) 62%,#fff);--err:#F08A89;--r-tx:#F08A89;--y-tx:#F0B650;--g-tx:#6CCB92;--b-tx:#7DB5EE;color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--tx);font-family:var(--font);font-size:14px;line-height:1.45;
+  padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+input[type=checkbox],input[type=radio]{accent-color:var(--acc)}
+:focus-visible{outline:2px solid var(--acc-t);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+.ic{flex:none;display:block}
+.mu{color:var(--mu)}

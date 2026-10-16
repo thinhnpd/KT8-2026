@@ -1,0 +1,11 @@
+/* Responsive và giảm chuyển động. Phải nạp sau cùng để ghi đè đúng thứ tự. */
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:760px){
+  .mapg{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .mn{margin-left:64px;padding-right:12px}
+  .row2{grid-template-columns:1fr}
+  .g2{grid-template-columns:1fr}
+  .srch{width:100%}
+}

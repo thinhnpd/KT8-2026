@@ -1,0 +1,9 @@
+/* Khung ứng dụng và phần đầu trang chung */
+.app{position:relative;min-height:760px;border-radius:12px;overflow:hidden;background:var(--bg);border:1px solid var(--bd);font-size:13px;transition:background .3s}
+.mn{margin-left:72px;padding:10px 16px 28px 0;min-width:0}
+
+.ph{margin:6px 0 12px}
+.ph h1{font-size:19px;font-weight:600;letter-spacing:-.01em}
+.ph p{color:var(--mu);margin-top:2px}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
+.grow{flex:1}

@@ -1,0 +1,9 @@
+/* Trang Settings */
+.rolebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding:8px 12px;border:1px dashed var(--bd);border-radius:8px;color:var(--mu);font-size:12.5px}
+.logo-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.logo-box{width:64px;height:64px;border-radius:12px;border:1px solid var(--bd);background:var(--hdr);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--mu)}
+.logo-box img{width:100%;height:100%;object-fit:contain;background:#fff}
+.sw{display:inline-block;width:14px;height:14px;border-radius:4px;background:var(--acc);vertical-align:-2px;margin-right:4px;border:1px solid var(--bd)}
+.stl{max-height:300px;overflow:auto;border:1px solid var(--bd);border-radius:6px;margin-top:8px}
+.stl table{border:0}
+.stl th{position:sticky;top:0}
