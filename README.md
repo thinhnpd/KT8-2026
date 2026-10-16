@@ -1,3 +1,4 @@
+# KT8-2026
 # S Class – Cấu trúc dự án
 
 Mở `index.html` bằng cách bấm đúp (không cần server) hoặc dùng Live Server.
