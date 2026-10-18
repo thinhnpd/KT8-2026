@@ -13,6 +13,16 @@
       '(mỗi dòng một người)': '(one person per line)',
       'Cần ít nhất 2 dòng': 'At least 2 lines are required',
 
+      /* Trang chủ chia nhóm */
+      'Bi lăn ngẫu nhiên': 'Random ball drop',
+      'Bi rơi qua các chốt và dừng ngẫu nhiên ở một ô trong danh sách tùy chỉnh.': 'The ball falls through pegs and stops at a random slot on the list.',
+      'Chơi Bi lăn ngẫu nhiên': 'Play Random ball drop',
+      'Chia nhóm học tập': 'Create study groups',
+      'Chọn trò chơi để thực hiện việc chia nhóm cho lớp.': 'Choose a game to create study groups for the class.',
+      'Đèn may mắn': 'Lucky lights',
+      'Các đèn nhấp nháy theo màu của từng nhóm, rồi chia đều thành viên vào các nhóm.': "The lights blink each group's colour, then divide classmates evenly into groups.",
+      'Chơi Đèn may mắn': 'Play Lucky lights',
+
       /* ---- Bi lăn ---- */
       'Bi lăn': 'Ball drop',
       'Tốc độ rơi': 'Fall speed',

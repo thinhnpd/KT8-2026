@@ -249,7 +249,7 @@ if(window.self!==window.top){try{
   const root=parent.document.documentElement;
   const syncTheme=()=>{
     const cs=parent.getComputedStyle(root);
-    ['--acc','--bg','--pn','--tx','--mu','--bd','--hdr'].forEach(v=>{
+  ['--acc','--bg','--pn','--tx','--mu','--bd','--hdr'].forEach(v=>{
       const x=cs.getPropertyValue(v).trim();if(x)app.style.setProperty(v,x);
     });
     app.dataset.theme=cs.colorScheme==='dark'?'dark':'light';
