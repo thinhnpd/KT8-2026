@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Đăng nhập · S Class</title>
+
+  <!-- Font (giống index.html) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap">
+
+  <!-- base.css: biến màu sáng/tối dùng chung với index.html -->
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/login.css">
+</head>
+<body>
+<div class="lg-wrap">
+  <div class="lg-tools">
+    <span class="lg-seg" id="langTg" role="group" aria-label="Ngôn ngữ / Language" data-aria="lang">
+      <button type="button" data-lang="vi" lang="vi" aria-pressed="true" title="Tiếng Việt">VI</button><button type="button" data-lang="en" lang="en" aria-pressed="false" title="English">EN</button>
+    </span>
+    <button class="lg-tg" id="tg" type="button" aria-pressed="false" data-aria="theme" aria-label="Đổi giao diện sáng hoặc tối"><span class="k"></span></button>
+  </div>
+
+  <main class="lg-card">
+    <svg class="lg-logo" width="48" height="48" viewBox="0 0 40 40" role="img" aria-label="Logo S Class"><rect x="2" y="2" width="36" height="36" rx="11" fill="#4338CA"/><path d="M26 15C26 11.5 23 10 20 10C16.5 10 14 12 14 15C14 18.5 18 19.5 20.5 20.3C24 21.4 26.5 22.8 26.5 26C26.5 29.3 23.5 31 20 31C16.5 31 14 29.3 13.5 26.5" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/><path d="M31 4.5L32.2 7.8L35.5 9L32.2 10.2L31 13.5L29.8 10.2L26.5 9L29.8 7.8Z" fill="#FBBF24"/></svg>
+    <h1 data-i18n="title">Đăng nhập</h1>
+    <p class="lg-sub mu" data-i18n="sub">Chào mừng bạn trở lại S Class</p>
+
+    <form id="form" novalidate>
+      <div class="lg-f">
+        <label for="email" data-i18n="email">Tên đăng nhập</label>
+        <input id="email" name="username" type="text" autocomplete="username" inputmode="text" required data-i18n-ph="emailPh" placeholder="">
+      </div>
+      <div class="lg-f">
+        <label for="pass" data-i18n="pass">Mật khẩu</label>
+        <div class="lg-pw">
+          <input id="pass" name="password" type="password" autocomplete="current-password" required data-i18n-ph="passPh" placeholder="Nhập mật khẩu">
+          <button type="button" id="eye" class="lg-eye" aria-pressed="false" data-aria="show" aria-label="Hiện mật khẩu">
+            <svg id="eyeOn" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg id="eyeOff" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M17.9 17.9A10.9 10.9 0 0 1 12 19C5 19 1 12 1 12a18.5 18.5 0 0 1 5.1-5.9M9.9 4.2A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.2 3.2M1 1l22 22M14.1 14.1a3 3 0 1 1-4.2-4.2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="lg-opt">
+        <label class="lg-chk"><input id="remember" type="checkbox"><span data-i18n="remember">Ghi nhớ đăng nhập</span></label>
+        <a href="#" id="forgot" data-i18n="forgot">Quên mật khẩu?</a>
+      </div>
+
+      <p class="lg-err" id="err" role="alert" aria-live="polite"></p>
+      <button class="lg-btn" id="submit" type="submit" data-i18n="submit">Đăng nhập</button>
+    </form>
+  </main>
+
+  <p class="lg-foot mu">© 2026 Dự án KT8, cuộc thi KHKT THPTC Lê Quý Đôn - Đà Nẵng</p>
+</div>
+<script src="../js/login.js"></script>
+</body>
+</html>

@@ -59,6 +59,12 @@ button:disabled,input:disabled,select:disabled{opacity:.5;cursor:not-allowed}
 canvas{width:100%;display:block;background:var(--pn);border:1px solid var(--bd)}
 @media(max-width:760px){.grid{grid-template-columns:1fr}.sb{display:none}.mn{margin-left:0;padding:10px 12px 20px}}
 </style>
+<script>if(window.self!==window.top)document.documentElement.classList.add('embed')</script>
+<style>
+.embed .sb,.embed .top{display:none!important}
+.embed .mn{margin-left:0!important;padding:0!important;max-width:none!important}
+.embed .app{min-height:0!important}
+</style>
 </head>
 <body>
 <div class="app" id="app" data-theme="light">
