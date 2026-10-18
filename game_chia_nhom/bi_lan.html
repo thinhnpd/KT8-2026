@@ -59,7 +59,7 @@ input[type=color]{padding:2px;max-width:48px;cursor:pointer}
 button:disabled,input:disabled,select:disabled{opacity:.5;cursor:not-allowed}
 #kq{margin:12px 0 0;min-height:20px;color:var(--mu);font-size:12.5px}
 #kq b{color:var(--acc);font-weight:600}
-canvas{width:100%;display:block;background:var(--pn);border:1px solid var(--bd)}
+canvas{width:min(100%,calc((100vh - 120px)*600/760));height:auto;aspect-ratio:600/760;display:block;margin:0 auto;background:var(--pn);border:1px solid var(--bd)}
 @media(max-width:760px){.grid{grid-template-columns:1fr}.sb{display:none}.mn{margin-left:0;padding:10px 12px 20px}}
 </style>
 <script>if(window.self!==window.top)document.documentElement.classList.add('embed')</script>
@@ -68,6 +68,7 @@ canvas{width:100%;display:block;background:var(--pn);border:1px solid var(--bd)}
 .embed .mn{margin-left:0!important;padding:0!important;max-width:none!important}
 .embed .app{min-height:0!important}
 .embed #thm{display:none!important}
+.embed canvas{width:min(100%,calc((var(--ph,800px) - 160px)*600/760))}
 </style>
 </head>
 <body>
@@ -237,6 +238,8 @@ if(window.self!==window.top){try{
     if(typeof draw==='function')draw();
   };
   sync();
+  const setPh=()=>app.style.setProperty('--ph',parent.innerHeight+'px');
+  setPh();parent.addEventListener('resize',setPh);
   new parent.MutationObserver(sync).observe(root,{attributes:true,attributeFilter:['data-theme','style','class']});
   parent.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',sync);
 }catch(e){}}
