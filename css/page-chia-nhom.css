@@ -7,3 +7,4 @@
 .cn-bar{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .cn-back{height:30px;padding:0 10px;border:1px solid var(--bd);border-radius:6px;background:transparent}
 .cn-frame{display:block;width:100%;min-height:70vh;border:0;background:transparent}
+.vt-frame{display:block;width:100%;height:calc(100vh - 90px);height:calc(100dvh - 90px);border:0;background:transparent}

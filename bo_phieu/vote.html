@@ -3,12 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Bỏ phiếu · S Class</title>
+<title>Bỏ phiếu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap">
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:#F3F5F9}
-.app{--acc:#3D78C0;--bg:#F3F5F9;--pn:#fff;--tx:#1F2937;--mu:#6B7280;--bd:#D9DEE8;--sb:#fff;--hdr:#EDF0F6;min-height:100vh;background:var(--bg);color:var(--tx);font:13px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;transition:background .35s,color .35s}
+.app{--acc:#3D78C0;--bg:#F3F5F9;--pn:#fff;--tx:#1F2937;--mu:#6B7280;--bd:#D9DEE8;--sb:#fff;--hdr:#EDF0F6;min-height:100vh;background:var(--bg);color:var(--tx);font:14px/1.45 "Be Vietnam Pro",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;transition:background .35s,color .35s}
 .app[data-theme=dark]{--bg:#0E1320;--pn:#18202F;--tx:#E8EBF2;--mu:#9AA3B5;--bd:#2D3750;--sb:#131A29;--hdr:#202A3F}
 button,input,textarea{font-family:inherit}
 svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -75,6 +78,14 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 dialog .btns{justify-content:flex-end}
 @media(max-width:760px){.grid{grid-template-columns:1fr}.sb{display:none}.mn{margin-left:0;padding:10px 12px 20px}}
 </style>
+<script>if(window.self!==window.top)document.documentElement.classList.add('embed')</script>
+<style>
+.embed .sb,.embed .top{display:none!important}
+.embed .mn{margin-left:0!important;padding:0!important;max-width:none!important}
+.embed .app{min-height:0!important}
+.embed #thm{display:none!important}
+html.embed,html.embed body,.embed .app{background:transparent!important}
+</style>
 </head>
 <body>
 <div class="app" id="app" data-theme="light">
@@ -114,7 +125,7 @@ Minh</textarea><div class="note" id="nn"></div></div></div>
         <div class="err" id="err" role="alert"></div>
         <div class="btns"><button class="btn" id="go">Bắt đầu</button><button class="gh" id="reset">Làm lại</button></div>
       </div>
-      <div class="bx">
+      <div class="bx" id="thm">
         <h5>Giao diện</h5>
         <div class="row"><span class="l">Màu nhấn</span><div class="chips" id="pre">
           <button class="sel" data-c="#3D78C0">Xanh dương</button><button data-c="#D9653B">Hoàng hôn</button><button data-c="#2F8A63">Xanh lá</button><button data-c="#7A55C7">Tím</button>
@@ -234,6 +245,20 @@ $('ac').oninput=e=>setAcc(e.target.value,null);
 $('th').onclick=()=>{app.dataset.theme=app.dataset.theme==='dark'?'light':'dark'};
 if(matchMedia('(prefers-color-scheme:dark)').matches)app.dataset.theme='dark';
 sync();board();
+if(window.self!==window.top){try{
+  const root=parent.document.documentElement;
+  const syncTheme=()=>{
+    const cs=parent.getComputedStyle(root);
+    ['--acc','--bg','--pn','--tx','--mu','--bd','--hdr'].forEach(v=>{
+      const x=cs.getPropertyValue(v).trim();if(x)app.style.setProperty(v,x);
+    });
+    app.dataset.theme=cs.colorScheme==='dark'?'dark':'light';
+    document.documentElement.style.colorScheme=app.dataset.theme;
+  };
+  syncTheme();
+  new parent.MutationObserver(syncTheme).observe(root,{attributes:true,attributeFilter:['data-theme','style','class']});
+  parent.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',syncTheme);
+}catch(e){}}
 </script>
 </body>
 </html>
