@@ -4,12 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bi lăn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap">
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:#F3F5F9}
-.app{--acc:#3D78C0;--bg:#F3F5F9;--pn:#fff;--tx:#1F2937;--mu:#6B7280;--bd:#D9DEE8;--sb:#fff;--hdr:#EDF0F6;min-height:100vh;background:var(--bg);color:var(--tx);font:13px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;transition:background .35s,color .35s}
+.app{--acc:#3D78C0;--bg:#F3F5F9;--pn:#fff;--tx:#1F2937;--mu:#6B7280;--bd:#D9DEE8;--sb:#fff;--hdr:#EDF0F6;min-height:100vh;background:var(--bg);color:var(--tx);font:14px/1.45 "Be Vietnam Pro",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;transition:background .35s,color .35s}
 .app[data-theme=dark]{--bg:#0E1320;--pn:#18202F;--tx:#E8EBF2;--mu:#9AA3B5;--bd:#2D3750;--sb:#131A29;--hdr:#202A3F}
 button,input,select{font-family:inherit}
 svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -64,6 +67,7 @@ canvas{width:100%;display:block;background:var(--pn);border:1px solid var(--bd)}
 .embed .sb,.embed .top{display:none!important}
 .embed .mn{margin-left:0!important;padding:0!important;max-width:none!important}
 .embed .app{min-height:0!important}
+.embed #thm{display:none!important}
 </style>
 </head>
 <body>
@@ -85,7 +89,7 @@ canvas{width:100%;display:block;background:var(--pn);border:1px solid var(--bd)}
   <div class="grid">
     <canvas id="c"></canvas>
     <div>
-      <div class="bx">
+      <div class="bx" id="thm" style="margin-top:10px">
         <h5>Thiết lập</h5>
         <div class="row" style="align-items:flex-start"><label for="lst">Danh sách ô<br>(mỗi dòng một ô)</label><div style="flex:1;min-width:0"><textarea id="lst" rows="5">1
 2
@@ -98,7 +102,7 @@ canvas{width:100%;display:block;background:var(--pn);border:1px solid var(--bd)}
         <div class="btns"><button class="btn" id="go">Bắt đầu</button><button class="gh" id="reset">Xóa thống kê</button></div>
         <p id="kq"></p>
       </div>
-      <div class="bx" style="margin-top:10px">
+      <div class="bx" id="thm" style="margin-top:10px">
         <h5>Giao diện</h5>
         <div class="row"><label>Màu nhấn</label><div class="chips" id="pre">
           <button class="sel" data-c="#3D78C0">Xanh dương</button><button data-c="#D9653B">Hoàng hôn</button><button data-c="#2F8A63">Xanh lá</button><button data-c="#7A55C7">Tím</button>
@@ -136,12 +140,12 @@ function draw(){
   ctx.textAlign='center';
   for(let k=0;k<n;k++){
     ctx.fillStyle=tx;let fs=clamp(sp*.4,14,26),t=labels[k];
-    ctx.font='500 '+fs+'px system-ui';
-    while(ctx.measureText(t).width>sp-8&&fs>9){fs--;ctx.font='500 '+fs+'px system-ui'}
+    ctx.font='500 '+fs+'px "Be Vietnam Pro", system-ui';
+    while(ctx.measureText(t).width>sp-8&&fs>9){fs--;ctx.font='500 '+fs+'px "Be Vietnam Pro", system-ui'}
     while(ctx.measureText(t).width>sp-8&&t.length>1)t=t.slice(0,-1);
     if(t!==labels[k])t=t.slice(0,-1)+'…';
     ctx.fillText(t,sp*(k+.5),H-18);
-    ctx.fillStyle=css('--mu');ctx.font=clamp(sp*.3,11,16)+'px system-ui';ctx.fillText(counts[k],sp*(k+.5),binTop+26);
+    ctx.fillStyle=css('--mu');ctx.font=clamp(sp*.3,11,16)+'px "Be Vietnam Pro", system-ui';ctx.fillText(counts[k],sp*(k+.5),binTop+26);
   }
   ctx.fillStyle=css('--mu');
   for(const p of pegs){ctx.beginPath();ctx.arc(p.x,p.y,pr,0,7);ctx.fill()}
@@ -220,6 +224,22 @@ $('ac').oninput=e=>setAcc(e.target.value,null);
 $('th').onclick=()=>{app.dataset.theme=app.dataset.theme==='dark'?'light':'dark';setTimeout(draw,380)};
 if(matchMedia('(prefers-color-scheme:dark)').matches)app.dataset.theme='dark';
 readList();build();upd();
+if(document.fonts)document.fonts.ready.then(draw);
+/* Đồng bộ giao diện với trang chủ khi được nhúng */
+if(window.self!==window.top){try{
+  const root=parent.document.documentElement;
+  const sync=()=>{
+    const cs=parent.getComputedStyle(root);
+    ['--acc','--bg','--pn','--tx','--mu','--bd','--hdr'].forEach(v=>{
+      const x=cs.getPropertyValue(v).trim();if(x)app.style.setProperty(v,x);
+    });
+    app.dataset.theme=cs.colorScheme==='dark'?'dark':'light';
+    if(typeof draw==='function')draw();
+  };
+  sync();
+  new parent.MutationObserver(sync).observe(root,{attributes:true,attributeFilter:['data-theme','style','class']});
+  parent.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',sync);
+}catch(e){}}
 </script>
 </body>
 </html>
