@@ -4,6 +4,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <script>
+  (function () {
+    var ok = false;
+    try { ok = !!(localStorage.getItem('sclass_auth') || sessionStorage.getItem('sclass_auth')); } catch (e) {}
+    if (!ok) location.replace('auth/login.html');
+  })();
+  </script>
+
   <title>S Class</title>
 
   <!-- Font -->
@@ -65,8 +74,6 @@
         </div>
       </div>
     </div>
-    <div id="view"></div>
-    <div id ="cnHost" hidden></div>
     <div id="view"></div>
     <div id="cnHost" hidden></div>
     <div id="voteHost" hidden></div>

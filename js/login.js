@@ -1,9 +1,12 @@
 /* Trang đăng nhập: đổi giao diện, đổi ngôn ngữ, kiểm tra dữ liệu, gửi đăng nhập. */
 (() => {
   // ===== Cấu hình =====
-  const NEXT_URL = 'index.html';        // trang chuyển tới sau khi đăng nhập thành công
+  const NEXT_URL = '../index.html';        // trang chuyển tới sau khi đăng nhập thành công
+  const AUTH_KEY = 'sclass_auth';
+  const ACCOUNTS = [{ user: 'user123', pass: '12345678' }];
   const THEME_KEY = 'theme';            // đổi cho khớp khóa mà js/components/theme.js đang dùng
   const LANG_KEY = 'lang';              // đổi cho khớp khóa mà js/components/lang-toggle.js đang dùng
+  
 
   const T = {
     vi: {
@@ -78,9 +81,16 @@
   //   const r = await fetch('/api/login', {method:'POST', headers:{'Content-Type':'application/json'},
   //     body: JSON.stringify({email, password, remember})});
   //   if (!r.ok) throw new Error('invalid');
-  async function authenticate(email, password, remember) {
-    throw new Error('not-implemented');
-  }
+  async function authenticate(username, password, remember) {
+  const ok = ACCOUNTS.some(a => a.user === username && a.pass === password);
+  if (!ok) throw new Error('invalid');
+  const v = JSON.stringify({ user: username, t: Date.now() });
+  try {
+    // "Ghi nhớ đăng nhập" bật: nhớ lâu dài; tắt: chỉ nhớ đến khi đóng tab
+    (remember ? localStorage : sessionStorage).setItem(AUTH_KEY, v);
+    (remember ? sessionStorage : localStorage).removeItem(AUTH_KEY);
+  } catch (e) {}
+}
 
   function fail(msg, field) {
     $('err').textContent = msg;
@@ -104,6 +114,6 @@
       $('submit').disabled = false; $('submit').textContent = t('submit');
     }
   });
-
+  try { if (localStorage.getItem(AUTH_KEY) || sessionStorage.getItem(AUTH_KEY)) location.replace(NEXT_URL); } catch (e) {}
   applyLang();
 })();
