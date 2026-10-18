@@ -42,7 +42,7 @@ function vMap(){
   if(mode==='setup'){
     var step=function(k,t,body){return '<div><div class="stp"><span class="sn">'+k+'</span><b>'+t+'</b></div><div class="fg">'+body+'</div></div>'};
     var cfg='<section class="card"><div class="fg" style="gap:18px">'+
-      step(1,'Thông tin và bàn học','<div class="g2"><div><label for="mr">Số hàng dọc</label><input type="text" inputmode="numeric" id="mr" data-m="rows" value="'+mp.rows+'"></div><div><label for="mcc">Số hàng ngang</label><input type="text" inputmode="numeric" id="mcc" data-m="cols" value="'+mp.cols+'"></div></div>'+
+      step(1,'Thông tin và bàn học','<div class="g2"><div><label for="mr">Số hàng ngang</label><input type="text" inputmode="numeric" id="mr" data-m="rows" value="'+mp.rows+'"></div><div><label for="mcc">Số hàng dọc</label><input type="text" inputmode="numeric" id="mcc" data-m="cols" value="'+mp.cols+'"></div></div>'+
         '<div><label for="ms">Mỗi bàn</label><select id="ms" data-m="spd">'+[1,2,3,4,5,6].map(function(k){return '<option value="'+k+'"'+(k===mp.spd?' selected':'')+'>'+k+' học sinh</option>'}).join('')+'</select></div>'+
         '<div class="note" id="cap">'+capHTML(c)+'</div><button class="btn" data-act="mgen">'+ic('layout-grid',15)+'Tạo sơ đồ bàn</button>')+
       step(2,'Danh sách học sinh','<p class="note">Lấy từ mục Thông tin lớp: '+n+' học sinh.</p><button class="btn gh" data-go="settings">Chỉnh danh sách</button>')+
