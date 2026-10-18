@@ -69,6 +69,7 @@ canvas{width:min(100%,calc((100vh - 120px)*600/760));height:auto;aspect-ratio:60
 .embed .app{min-height:0!important}
 .embed #thm{display:none!important}
 .embed canvas{width:min(100%,calc((var(--ph,800px) - 160px)*600/760))}
+html.embed,html.embed body,.embed .app{background:transparent!important}
 </style>
 </head>
 <body>
@@ -235,6 +236,7 @@ if(window.self!==window.top){try{
       const x=cs.getPropertyValue(v).trim();if(x)app.style.setProperty(v,x);
     });
     app.dataset.theme=cs.colorScheme==='dark'?'dark':'light';
+    document.documentElement.style.colorScheme=app.dataset.theme;
     if(typeof draw==='function')draw();
   };
   sync();

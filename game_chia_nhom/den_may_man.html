@@ -83,6 +83,7 @@ select:disabled,input[type=number]:disabled{opacity:.5;cursor:not-allowed}
 .embed .mn{margin-left:0!important;padding:0!important;max-width:none!important}
 .embed .app{min-height:0!important}
 .embed #thm{display:none!important}
+html.embed,html.embed body,.embed .app{background:transparent!important}
 </style>
 </head>
 <body>
@@ -256,6 +257,7 @@ if(window.self!==window.top){try{
       const x=cs.getPropertyValue(v).trim();if(x)app.style.setProperty(v,x);
     });
     app.dataset.theme=cs.colorScheme==='dark'?'dark':'light';
+    document.documentElement.style.colorScheme=app.dataset.theme;
     if(typeof draw==='function')draw();
   };
   sync();
