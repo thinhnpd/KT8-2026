@@ -6,5 +6,9 @@
 .cn-btn:hover{filter:brightness(1.08)}
 .cn-bar{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .cn-back{height:30px;padding:0 10px;border:1px solid var(--bd);border-radius:6px;background:transparent}
+#cnHub>.cn-back{margin-bottom:10px}
 .cn-frame{display:block;width:100%;min-height:70vh;border:0;background:transparent}
 .vt-frame{display:block;width:100%;height:calc(100vh - 90px);height:calc(100dvh - 90px);border:0;background:transparent}
+.cn-row{margin:0 0 12px}
+.cn-open{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border:0;border-radius:6px;background:var(--acc);color:#fff;font-size:13px}
+.cn-open:hover{filter:brightness(1.08)}

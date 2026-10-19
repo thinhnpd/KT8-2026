@@ -84,22 +84,21 @@
     watch();
   }
 
-  /* Ngôn ngữ hiện tại của trang chủ (chỉ đọc được khi cùng một website, qua http/https) */
+    /* Ngôn ngữ hiện tại: hỏi thẳng bộ dịch của trang chủ (cùng một website) */
   function detect() {
     try {
-      var pd = window.parent.document, b = pd.querySelector('#langTg [aria-pressed="true"]');
-      if (b && b.dataset.lang) return b.dataset.lang;
-      var l = pd.documentElement.lang; if (l) return l.slice(0, 2);
+      var p = window.parent;
+      if (p.I18N && p.I18N.get) return p.I18N.get();
+      var l = p.document.documentElement.lang; if (l) return l.slice(0, 2);
     } catch (e) {}
     return 'vi';
   }
   function follow() {
     try {
       var p = window.parent; if (p === window) return;
-      var pd = p.document, f = function () { setLang(detect()); };
-      new p.MutationObserver(f).observe(pd.documentElement, { attributes: true, attributeFilter: ['lang'] });
-      var tg = pd.getElementById('langTg');
-      if (tg) new p.MutationObserver(f).observe(tg, { attributes: true, subtree: true, attributeFilter: ['aria-pressed', 'class'] });
+      if (p.I18N && p.I18N.onChange) p.I18N.onChange(function (l) { setLang(l); });
+      new p.MutationObserver(function () { setLang(detect()); })
+        .observe(p.document.documentElement, { attributes: true, attributeFilter: ['lang'] });
     } catch (e) {}
   }
 

@@ -1,5 +1,5 @@
 'use strict';
-/* Chia nhóm học tập: mở trò chơi ngay trong trang (iframe), không mở tab mới.
+/* Công cụ chia nhóm học tập: mở trò chơi ngay trong trang (iframe), không mở tab mới.
    Các iframe được giữ lại khi chuyển trang nên trò chơi không bị tải lại. */
 var CN_GAMES=[
   {id:'bilan',name:'Bi lăn ngẫu nhiên',desc:'Bi rơi qua các chốt và dừng ngẫu nhiên ở một ô trong danh sách tùy chỉnh.',src:'game_chia_nhom/bi_lan.html'},
@@ -12,7 +12,8 @@ function mountChiaNhom(){
   CN.built=true;
   var host=$('cnHost');
   host.innerHTML=
-    '<div id="cnHub"><h2 class="cn-t">Chia nhóm học tập</h2>'+
+    '<div id="cnHub"><button class="cn-back" data-cn="groups">← Groups</button>'+
+    '<h2 class="cn-t">Chia nhóm học tập</h2>'+
     '<p class="mu">Chọn trò chơi để thực hiện việc chia nhóm cho lớp.</p><div class="cn-grid">'+
     CN_GAMES.map(function(g){return '<div class="cn-card"><h3>'+esc(g.name)+'</h3><p class="mu">'+esc(g.desc)+'</p>'+
       '<button class="cn-btn" data-cn="'+g.id+'">Chơi '+esc(g.name)+'</button></div>'}).join('')+
@@ -21,6 +22,7 @@ function mountChiaNhom(){
   host.addEventListener('click',function(e){
     var b=e.target.closest('[data-cn]');if(!b)return;
     if(b.dataset.cn==='back')cnBack();
+    else if(b.dataset.cn==='groups')go('groups');
     else cnOpen(CN_GAMES.filter(function(g){return g.id===b.dataset.cn})[0]);
   });
 }
