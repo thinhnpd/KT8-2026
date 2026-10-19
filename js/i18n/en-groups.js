@@ -3,7 +3,7 @@
 I18N.add('en',{
   'Sắp có':'Coming soon','chưa bầu':'not elected yet',
   'Mỗi nhóm sẽ có trang riêng. Phần này đang thiết kế nên chưa mở được.':'Each group will have its own page. This part is still being designed, so it cannot be opened yet.',
-  'Công cụ chia nhóm học tập':'Study group tool',
+  'Công cụ chia nhóm học tập':'Study group creator',
   'Chia nhóm học tập':'Study groups',
   'Chọn trò chơi để thực hiện việc chia nhóm cho lớp.':'Choose a game to divide the class into groups.',
   'Bi lăn ngẫu nhiên':'Random ball drop',

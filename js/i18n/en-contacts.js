@@ -1,7 +1,7 @@
 'use strict';
 /* English – trang Directory (danh bạ) */
 I18N.add('en',{
-  'Danh bạ':'Directory','SĐT / Zalo':'Phone / Zalo','Số điện thoại / Zalo':'Phone number / Zalo',
+  'Danh bạ':'Contacts','SĐT / Zalo':'Phone / Zalo','Số điện thoại / Zalo':'Phone number / Zalo',
   'Sở trường':'Talents','Môn dạy / hỗ trợ':'Subject taught / supported','Môn dạy':'Subject taught',
   'Môn hỗ trợ bạn bè':'Subject you support for classmates','Chưa cập nhật':'Not updated yet',
   'Loại thành viên':'Member type','Chỉnh sửa thành viên':'Edit member','Thêm thành viên':'Add member',
