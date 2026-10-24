@@ -9,6 +9,6 @@ function renderBell(){
 document.addEventListener('click',function(e){
   var a=e.target.closest('[data-act]');if(!a)return;
   var act=a.dataset.act;
-  if(act==='readAll'){notifs.forEach(function(n){n.un=false});renderBell();renderTop()}
-  else if(act==='notif'){var n=notifs.filter(function(x){return x.id===+a.dataset.id})[0];n.un=false;go(n.pg)}
+  if(act==='readAll'){var ids=notifs.filter(function(n){return n.un}).map(function(n){return n.id});notifs.forEach(function(n){n.un=false});renderBell();renderTop();if(ids.length)API.markRead(ids).catch(function(){})}
+  else if(act==='notif'){var n=notifs.filter(function(x){return x.id===+a.dataset.id})[0];if(n.un){n.un=false;API.markRead([n.id]).catch(function(){})}go(n.pg)}
 });

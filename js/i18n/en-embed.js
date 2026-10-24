@@ -46,6 +46,7 @@
       'Danh sách thành viên': 'Member list',
       'Thời gian quay': 'Spin time',
       'Quay': 'Spin',
+      'Dùng danh sách lớp': 'Use class list',
       'Xóa lịch sử': 'Clear history',
       'Lịch sử': 'History',
       'Chưa có lượt quay nào': 'No spins yet',

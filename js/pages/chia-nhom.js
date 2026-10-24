@@ -18,7 +18,7 @@ function mountChiaNhom(){
     CN_GAMES.map(function(g){return '<div class="cn-card"><h3>'+esc(g.name)+'</h3><p class="mu">'+esc(g.desc)+'</p>'+
       '<button class="cn-btn" data-cn="'+g.id+'">Chơi '+esc(g.name)+'</button></div>'}).join('')+
     '</div></div>'+
-    '<div id="cnGame" hidden><div class="cn-bar"><button class="cn-back" data-cn="back">← Quay lại</button><b id="cnTitle"></b></div><div id="cnFrames"></div></div>';
+    '<div id="cnGame" hidden><div class="cn-save" id="cnSave" hidden></div><div class="cn-bar"><button class="cn-back" data-cn="back">← Quay lại</button><b id="cnTitle"></b></div><div id="cnFrames"></div></div>';
   host.addEventListener('click',function(e){
     var b=e.target.closest('[data-cn]');if(!b)return;
     if(b.dataset.cn==='back')cnBack();
@@ -47,4 +47,25 @@ function cnFit(f){
     var d=f.contentDocument,fit=function(){f.style.height=Math.ceil(d.body.getBoundingClientRect().height)+'px'};
     fit();if(window.ResizeObserver)new ResizeObserver(fit).observe(d.body);
   }catch(e){f.style.height='80vh'}
+}
+/* Nhận kết quả chia nhóm từ trò chơi (iframe cùng website) và lưu vào cơ sở dữ liệu theo từng môn */
+window.addEventListener('message',function(e){
+  if(e.origin!==location.origin||!e.data||e.data.type!=='groups:done'||!admin())return;
+  cnAskSave(e.data);
+});
+function cnAskSave(d){
+  var box=$('cnSave'),unknown=0;
+  d.groups.forEach(function(g){g.members.forEach(function(m){if(!API.idOf(m))unknown++})});
+  box.innerHTML='<span>Lưu bộ nhóm này cho môn:</span> <select id="cnSubj">'+SUBJ.map(function(s){return '<option>'+esc(s)+'</option>'}).join('')+'</select> '+
+    '<button class="cn-btn" id="cnSaveBtn">Lưu</button> <span class="mu" id="cnSaveMsg">'+(unknown?unknown+' tên không có trong danh sách lớp sẽ bị bỏ qua.':'')+'</span>';
+  box.hidden=false;
+  $('cnSaveBtn').onclick=async function(){
+    var b=$('cnSaveBtn'),subj=$('cnSubj').value;b.disabled=true;
+    try{
+      await API.saveGroups(subj,d.method,d.groups);
+      await API.notify('Nhóm học tập môn '+subj+' đã được cập nhật','groups','users');
+      $('cnSaveMsg').textContent='Đã lưu cho môn '+subj+'.';
+      if(typeof toast==='function')toast('Đã lưu nhóm học tập môn '+subj);
+    }catch(err){console.error(err);$('cnSaveMsg').textContent='Không lưu được. Vui lòng thử lại.';b.disabled=false}
+  };
 }

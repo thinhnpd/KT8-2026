@@ -2,10 +2,8 @@
 (() => {
   // ===== Cấu hình =====
   const NEXT_URL = '../index.html';        // trang chuyển tới sau khi đăng nhập thành công
-  const AUTH_KEY = 'sclass_auth';
-  const ACCOUNTS = [{ user: 'user123', pass: '12345678' }];
   const THEME_KEY = 'theme';            // đổi cho khớp khóa mà js/components/theme.js đang dùng
-  const LANG_KEY = 'lang';              // đổi cho khớp khóa mà js/components/lang-toggle.js đang dùng
+  const LANG_KEY = 'sclass.lang';       // khóa của js/i18n/engine.js: đổi ngôn ngữ ở đây cũng áp dụng cho trang chủ
   
 
   const T = {
@@ -14,8 +12,9 @@
       emailPh: '', passPh: 'Nhập mật khẩu', remember: 'Ghi nhớ đăng nhập', forgot: 'Quên mật khẩu?',
       submit: 'Đăng nhập', busy: 'Đang đăng nhập...', show: 'Hiện mật khẩu', hide: 'Ẩn mật khẩu',
       theme: 'Đổi giao diện sáng hoặc tối', lang: 'Ngôn ngữ / Language',
-      errEmail: 'Vui lòng nhập email hợp lệ.', errPass: 'Vui lòng nhập mật khẩu.',
-      errFail: 'Email hoặc mật khẩu không đúng.', errServer: 'Chưa kết nối máy chủ đăng nhập.',
+      errEmail: 'Vui lòng nhập tên đăng nhập.', errPass: 'Vui lòng nhập mật khẩu.',
+      errFail: 'Tên đăng nhập hoặc mật khẩu không đúng.', errServer: 'Không kết nối được máy chủ. Vui lòng thử lại.',
+      noacct: 'Chưa có tài khoản?', signup: 'Đăng ký quản trị lớp',
       page: 'Đăng nhập · S Class'
     },
     en: {
@@ -23,8 +22,9 @@
       emailPh: '', passPh: 'Enter your password', remember: 'Remember me', forgot: 'Forgot password?',
       submit: 'Log in', busy: 'Logging in...', show: 'Show password', hide: 'Hide password',
       theme: 'Switch light or dark theme', lang: 'Language',
-      errEmail: 'Please enter a valid email.', errPass: 'Please enter your password.',
-      errFail: 'Incorrect email or password.', errServer: 'The login server is not connected yet.',
+      errEmail: 'Please enter your username.', errPass: 'Please enter your password.',
+      errFail: 'Incorrect username or password.', errServer: 'Cannot reach the server. Please try again.',
+      noacct: 'No account yet?', signup: 'Class admin sign-up',
       page: 'Log in · S Class'
     }
   };
@@ -76,21 +76,11 @@
   };
 
   // ===== Đăng nhập =====
-  // TODO: nối với máy chủ thật. Hàm này phải ném lỗi (throw) nếu đăng nhập thất bại.
-  // Ví dụ:
-  //   const r = await fetch('/api/login', {method:'POST', headers:{'Content-Type':'application/json'},
-  //     body: JSON.stringify({email, password, remember})});
-  //   if (!r.ok) throw new Error('invalid');
+  // Đăng nhập qua Supabase (js/data/api.js). Ném lỗi 'invalid' nếu sai tên/mật khẩu, 'network' nếu không kết nối được.
   async function authenticate(username, password, remember) {
-  const ok = ACCOUNTS.some(a => a.user === username && a.pass === password);
-  if (!ok) throw new Error('invalid');
-  const v = JSON.stringify({ user: username, t: Date.now() });
-  try {
-    // "Ghi nhớ đăng nhập" bật: nhớ lâu dài; tắt: chỉ nhớ đến khi đóng tab
-    (remember ? localStorage : sessionStorage).setItem(AUTH_KEY, v);
-    (remember ? sessionStorage : localStorage).removeItem(AUTH_KEY);
-  } catch (e) {}
-}
+    API.setRemember(remember);
+    await API.signIn(username, password);
+  }
 
   function fail(msg, field) {
     $('err').textContent = msg;
@@ -109,11 +99,12 @@
       await authenticate(email, pass, $('remember').checked);
       location.href = NEXT_URL;
     } catch (err) {
-      fail(t(err.message === 'not-implemented' ? 'errServer' : 'errFail'));
+      fail(t(err.message === 'invalid' ? 'errFail' : 'errServer'));
     } finally {
       $('submit').disabled = false; $('submit').textContent = t('submit');
     }
   });
-  try { if (localStorage.getItem(AUTH_KEY) || sessionStorage.getItem(AUTH_KEY)) location.replace(NEXT_URL); } catch (e) {}
+  // Đã đăng nhập sẵn thì vào thẳng trang chủ
+  API.session().then(s => { if (s) location.replace(NEXT_URL); }).catch(() => {});
   applyLang();
 })();

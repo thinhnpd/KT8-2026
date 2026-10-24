@@ -12,3 +12,6 @@
 .cn-row{margin:0 0 12px}
 .cn-open{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border:0;border-radius:6px;background:var(--acc);color:#fff;font-size:13px}
 .cn-open:hover{filter:brightness(1.08)}
+.cn-save{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px;padding:10px 12px;background:var(--pn);border:1px solid var(--bd);border-radius:8px}
+.cn-save select{height:30px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);padding:0 8px}
+.cn-save .cn-btn{padding:0 14px}

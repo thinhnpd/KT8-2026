@@ -5,12 +5,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
+  <!-- Kiểm tra đăng nhập qua Supabase. Trang ẩn cho đến khi xác nhận có phiên đăng nhập. -->
+  <style>html{visibility:hidden}</style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+  <script src="js/data/supabase-config.js"></script>
+  <script src="js/data/api.js"></script>
   <script>
-  (function () {
-    var ok = false;
-    try { ok = !!(localStorage.getItem('sclass_auth') || sessionStorage.getItem('sclass_auth')); } catch (e) {}
-    if (!ok) location.replace('auth/login.html');
-  })();
+    API.session().then(function (s) {
+      if (!s) location.replace('auth/login.html'); else document.documentElement.style.visibility = 'visible';
+    }).catch(function () { location.replace('auth/login.html'); });
   </script>
 
   <title>S Class</title>
