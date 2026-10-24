@@ -16,7 +16,15 @@
       eUser: 'Tên đăng nhập gồm 3–30 ký tự: chữ, số, dấu chấm, gạch dưới hoặc gạch ngang.',
       eTaken: 'Tên đăng nhập đã được sử dụng.', ePass: 'Mật khẩu cần ít nhất 8 ký tự.',
       eMatch: 'Mật khẩu xác nhận không khớp.', eCls: 'Vui lòng nhập tên lớp.', eCode: 'Vui lòng nhập mã lớp.',
-      eBad: 'Mã lớp không đúng hoặc không khớp với tên lớp.', eSave: 'Không thể tạo tài khoản. Vui lòng kiểm tra kết nối và thử lại.'
+      eBad: 'Mã lớp không đúng hoặc không khớp với tên lớp.', eSave: 'Không thể tạo tài khoản. Vui lòng kiểm tra kết nối và thử lại.',
+      eSetup: 'Hệ thống chưa được cấu hình đúng (thiếu api.js hoặc supabase-config.js). Nhấn F12 để xem chi tiết.',
+      eNetwork: 'Không kết nối được tới Supabase. Kiểm tra URL trong supabase-config.js và kết nối mạng.',
+      eKey: 'Khóa API không hợp lệ. Kiểm tra khóa trong supabase-config.js (dùng khóa anon/publishable, không dùng secret).',
+      eSchema: 'Cơ sở dữ liệu chưa được tạo. Hãy chạy schema.sql trong Supabase (SQL Editor) rồi thử lại.',
+      eDisabled: 'Supabase đang tắt việc tạo tài khoản mới. Bật lại trong Authentication > Sign In / Providers.',
+      eRate: 'Supabase đang giới hạn việc gửi email xác nhận. Hãy tắt "Confirm email" (Authentication > Providers > Email) rồi thử lại sau ít phút.',
+      eEmail: 'Supabase từ chối địa chỉ email giả. Đổi emailDomain trong supabase-config.js sang tên miền của bạn.',
+      eSession: 'Tài khoản đã được tạo nhưng chưa đăng nhập được. Hãy tắt "Confirm email" trong Supabase (Authentication > Providers > Email), xóa tài khoản thử trong Authentication > Users rồi đăng ký lại.'
     },
     en: {
       page: 'Class admin sign-up · S Class', title: 'Sign up', sub: 'For class administrators only',
@@ -28,7 +36,15 @@
       eUser: 'Username must be 3–30 characters: letters, digits, dots, underscores or hyphens.',
       eTaken: 'This username is already taken.', ePass: 'Password must be at least 8 characters.',
       eMatch: 'The passwords do not match.', eCls: 'Please enter the class name.', eCode: 'Please enter the class code.',
-      eBad: 'The class code is incorrect or does not match the class name.', eSave: 'Could not create the account. Check your connection and try again.'
+      eBad: 'The class code is incorrect or does not match the class name.', eSave: 'Could not create the account. Check your connection and try again.',
+      eSetup: 'The system is not configured correctly (api.js or supabase-config.js is missing). Press F12 for details.',
+      eNetwork: 'Cannot reach Supabase. Check the URL in supabase-config.js and your connection.',
+      eKey: 'Invalid API key. Check the key in supabase-config.js (use the anon/publishable key, not the secret one).',
+      eSchema: 'The database has not been created. Run schema.sql in Supabase (SQL Editor) and try again.',
+      eDisabled: 'Supabase has new sign-ups turned off. Turn them on under Authentication > Sign In / Providers.',
+      eRate: 'Supabase is limiting confirmation emails. Turn off "Confirm email" (Authentication > Providers > Email) and try again in a few minutes.',
+      eEmail: 'Supabase rejected the placeholder email. Change emailDomain in supabase-config.js to a domain you own.',
+      eSession: 'The account was created but could not be signed in. Turn off "Confirm email" in Supabase (Authentication > Providers > Email), delete the test user under Authentication > Users, then sign up again.'
     }
   };
 
@@ -97,8 +113,13 @@
       $('err').classList.add('lg-ok'); $('err').textContent = t('ok');
       setTimeout(() => { location.href = NEXT_URL; }, 900);
     } catch (err) {
-      const k = err.message === 'bad_class_code' ? 'eBad' : err.message === 'taken' ? 'eTaken' : 'eSave';
+      console.error('[signup]', err);
+      const broken = typeof API === 'undefined' || (typeof SB_ERROR !== 'undefined' && SB_ERROR);
+      const MAP = { bad_class_code: 'eBad', taken: 'eTaken', network: 'eNetwork', bad_key: 'eKey', no_schema: 'eSchema',
+        signup_disabled: 'eDisabled', rate_limit: 'eRate', bad_email: 'eEmail', no_session: 'eSession' };
+      const k = broken ? 'eSetup' : (MAP[err.message] || 'eSave');
       fail(k, k === 'eBad' ? 'code' : k === 'eTaken' ? 'user' : null);
+      if (k === 'eSave') $('err').textContent += ' [' + String(err.detail || err.message || err).slice(0, 160) + ']';   // lý do kỹ thuật, để dễ tìm lỗi
       $('submit').disabled = false; $('submit').textContent = t('submit');
     }
   });

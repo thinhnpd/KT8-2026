@@ -14,17 +14,38 @@ var sessionStore = {
   setItem: function (k, v) { try { var r = wantRemember(); (r ? localStorage : sessionStorage).setItem(k, v); (r ? sessionStorage : localStorage).removeItem(k); } catch (e) {} },
   removeItem: function (k) { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {} }
 };
-var SB = supabase.createClient(SB_CONFIG.url, SB_CONFIG.key, { auth: { storage: sessionStore, persistSession: true, autoRefreshToken: true } });
+var SB = null, SB_ERROR = '';   // SB_ERROR cho biết vì sao chưa kết nối được (các trang dùng để báo lỗi rõ ràng)
+try {
+  if (typeof supabase === 'undefined') throw new Error('Không tải được thư viện Supabase (kiểm tra mạng hoặc trình chặn quảng cáo).');
+  if (typeof SB_CONFIG === 'undefined') throw new Error('Thiếu file js/data/supabase-config.js.');
+  if (/YOUR-/.test(String(SB_CONFIG.url) + String(SB_CONFIG.key))) throw new Error('Chưa điền URL và khóa trong js/data/supabase-config.js.');
+  SB = supabase.createClient(SB_CONFIG.url, SB_CONFIG.key, { auth: { storage: sessionStore, persistSession: true, autoRefreshToken: true } });
+} catch (e) { SB_ERROR = e.message; console.error('[S Class] ' + e.message, e); }
 
 var API = (function () {
-  var EMAIL_DOMAIN = SB_CONFIG.emailDomain || '@sclass.app';   // cần TẮT "Confirm email" trong Authentication > Providers > Email
+  var EMAIL_DOMAIN = (typeof SB_CONFIG !== 'undefined' && SB_CONFIG.emailDomain) || '@sclass.app';   // cần TẮT "Confirm email" trong Authentication > Providers > Email
   function emailOf(u) { return String(u).trim().toLowerCase() + EMAIL_DOMAIN; }
   function ok(r) { if (r.error) throw r.error; return r.data; }
+  /* Đổi lỗi của Supabase thành mã dễ hiểu (e.message = mã, e.detail = nguyên văn lỗi gốc) */
+  function explain(e) {
+    var m = (e && e.message) || String(e), c = e && e.code, code = 'unknown';
+    if (/Failed to fetch|NetworkError|Load failed/i.test(m)) code = 'network';
+    else if (/Invalid API key|invalid.*apikey|JWT|Forbidden use of secret/i.test(m)) code = 'bad_key';
+    else if (/Could not find the function|schema cache|PGRST20|does not exist/i.test(m) || c === 'PGRST202') code = 'no_schema';
+    else if (/not allowed|signups? (are )?disabled|Email signups are disabled/i.test(m)) code = 'signup_disabled';
+    else if (/rate limit|sending .*email|confirmation email/i.test(m)) code = 'rate_limit';
+    else if (/email.*invalid|invalid.*email/i.test(m)) code = 'bad_email';
+    else if (/not_authenticated/.test(m)) code = 'no_session';
+    var x = new Error(code); x.detail = m; return x;
+  }
 
   /* ---------- Đăng nhập / đăng ký ---------- */
   async function signIn(username, password) {
     var r = await SB.auth.signInWithPassword({ email: emailOf(username), password: password });
-    if (r.error) throw new Error(r.error.status === 400 || /invalid|credentials/i.test(r.error.message) ? 'invalid' : 'network');
+    if (r.error) {
+      if (/not confirmed/i.test(r.error.message)) throw new Error('unconfirmed');
+      throw new Error(r.error.status === 400 || /invalid|credentials/i.test(r.error.message) ? 'invalid' : 'network');
+    }
     return r.data.session;
   }
   function setRemember(on) { try { localStorage.setItem(REMEMBER_KEY, on ? '1' : '0'); } catch (e) {} }
@@ -37,11 +58,19 @@ var API = (function () {
 
   /* Admin lớp: kiểm tra mã ở máy chủ -> tạo tài khoản -> gắn vào lớp */
   async function signUpAdmin(o) {   // {username, password, fullName, className, code}
-    if (!ok(await SB.rpc('check_class_code', { p_class_name: o.className, p_code: o.code }))) throw new Error('bad_class_code');
+    var chk = await SB.rpc('check_class_code', { p_class_name: o.className, p_code: o.code });
+    if (chk.error) throw explain(chk.error);
+    if (!chk.data) throw new Error('bad_class_code');
     var r = await SB.auth.signUp({ email: emailOf(o.username), password: o.password });
-    if (r.error) throw new Error(/registered|exists/i.test(r.error.message) ? 'taken' : r.error.message);
+    if (r.error) throw (/registered|exists/i.test(r.error.message) ? new Error('taken') : explain(r.error));
+    if (!r.data.session) {   // "Confirm email" còn bật nên Supabase chưa cấp phiên đăng nhập
+      var e0 = new Error('no_session'); e0.detail = 'signUp không trả về phiên đăng nhập'; throw e0;
+    }
     var g = await SB.rpc('register_class_admin', { p_username: o.username, p_full_name: o.fullName || '', p_class_name: o.className, p_code: o.code });
-    if (g.error) { await SB.auth.signOut(); throw new Error(/duplicate|unique/i.test(g.error.message) ? 'taken' : g.error.message); }
+    if (g.error) {
+      await SB.auth.signOut();
+      throw (/duplicate|unique/i.test(g.error.message) ? new Error('taken') : /bad_class_code/.test(g.error.message) ? new Error('bad_class_code') : explain(g.error));
+    }
   }
   /* Học sinh: bước 1 lấy danh sách tên chưa có tài khoản, bước 2 đăng ký */
   async function freeStudents(className, joinCode) {
@@ -49,9 +78,10 @@ var API = (function () {
   }
   async function signUpStudent(o) { // {username, password, className, joinCode, studentId}
     var r = await SB.auth.signUp({ email: emailOf(o.username), password: o.password });
-    if (r.error) throw new Error(/registered|exists/i.test(r.error.message) ? 'taken' : r.error.message);
+    if (r.error) throw (/registered|exists/i.test(r.error.message) ? new Error('taken') : explain(r.error));
+    if (!r.data.session) { var e0 = new Error('no_session'); e0.detail = 'signUp không trả về phiên đăng nhập'; throw e0; }
     var g = await SB.rpc('register_student', { p_username: o.username, p_class_name: o.className, p_join_code: o.joinCode, p_student_id: o.studentId });
-    if (g.error) { await SB.auth.signOut(); throw new Error(g.error.message); }
+    if (g.error) { await SB.auth.signOut(); throw (/duplicate|unique/i.test(g.error.message) ? new Error('taken') : explain(g.error)); }
   }
 
   /* ---------- Nạp dữ liệu lớp vào đối tượng C hiện có (giữ nguyên cấu trúc của seed.js) ---------- */

@@ -13,7 +13,7 @@
       submit: 'Đăng nhập', busy: 'Đang đăng nhập...', show: 'Hiện mật khẩu', hide: 'Ẩn mật khẩu',
       theme: 'Đổi giao diện sáng hoặc tối', lang: 'Ngôn ngữ / Language',
       errEmail: 'Vui lòng nhập tên đăng nhập.', errPass: 'Vui lòng nhập mật khẩu.',
-      errFail: 'Tên đăng nhập hoặc mật khẩu không đúng.', errServer: 'Không kết nối được máy chủ. Vui lòng thử lại.',
+      errFail: 'Tên đăng nhập hoặc mật khẩu không đúng.', errServer: 'Không kết nối được máy chủ. Vui lòng thử lại.', errSetup: 'Hệ thống chưa được cấu hình đúng (thiếu api.js hoặc supabase-config.js). Nhấn F12 để xem chi tiết.', errUnconfirmed: 'Tài khoản chưa được xác nhận. Hãy tắt "Confirm email" trong Supabase rồi đăng ký lại.',
       noacct: 'Chưa có tài khoản?', signup: 'Đăng ký quản trị lớp',
       page: 'Đăng nhập · S Class'
     },
@@ -23,7 +23,7 @@
       submit: 'Log in', busy: 'Logging in...', show: 'Show password', hide: 'Hide password',
       theme: 'Switch light or dark theme', lang: 'Language',
       errEmail: 'Please enter your username.', errPass: 'Please enter your password.',
-      errFail: 'Incorrect username or password.', errServer: 'Cannot reach the server. Please try again.',
+      errFail: 'Incorrect username or password.', errServer: 'Cannot reach the server. Please try again.', errSetup: 'The system is not configured correctly (api.js or supabase-config.js is missing). Press F12 for details.', errUnconfirmed: 'This account is not confirmed. Turn off "Confirm email" in Supabase and sign up again.',
       noacct: 'No account yet?', signup: 'Class admin sign-up',
       page: 'Log in · S Class'
     }
@@ -99,12 +99,14 @@
       await authenticate(email, pass, $('remember').checked);
       location.href = NEXT_URL;
     } catch (err) {
-      fail(t(err.message === 'invalid' ? 'errFail' : 'errServer'));
+      console.error('[login]', err);
+      const broken = typeof API === 'undefined' || (typeof SB_ERROR !== 'undefined' && SB_ERROR);
+      fail(t(broken ? 'errSetup' : err.message === 'invalid' ? 'errFail' : err.message === 'unconfirmed' ? 'errUnconfirmed' : 'errServer'));
     } finally {
       $('submit').disabled = false; $('submit').textContent = t('submit');
     }
   });
   // Đã đăng nhập sẵn thì vào thẳng trang chủ
-  API.session().then(s => { if (s) location.replace(NEXT_URL); }).catch(() => {});
+  if (typeof API !== 'undefined') API.session().then(s => { if (s) location.replace(NEXT_URL); }).catch(() => {});
   applyLang();
 })();
