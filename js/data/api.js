@@ -99,7 +99,7 @@ var API = (function () {
     st.forEach(function (s) { var k = s.student_contacts || {}; C.info[s.full_name] = { email: k.email || '', phone: k.phone || '', subj: s.subject, talent: s.talent }; });
     C.teachers = tc.map(function (t) { return { n: t.name, s: t.subject, email: t.email, phone: t.phone, gv: t.is_homeroom }; });
     C.committee = cm.map(function (m) { return { r: m.position, w: ids.byId[m.student_id] || '' }; });
-    S.name = p.full_name; S.role = p.role;
+    S.name = p.full_name || p.username; S.role = p.role;
     if (typeof syncDerived === 'function') syncDerived(C);   // làm khớp sơ đồ lớp, ứng viên... với danh sách học sinh mới
     return p;
   }
