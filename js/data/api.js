@@ -99,12 +99,41 @@ var API = (function () {
     st.forEach(function (s) { var k = s.student_contacts || {}; C.info[s.full_name] = { email: k.email || '', phone: k.phone || '', subj: s.subject, talent: s.talent }; });
     C.teachers = tc.map(function (t) { return { n: t.name, s: t.subject, email: t.email, phone: t.phone, gv: t.is_homeroom }; });
     C.committee = cm.map(function (m) { return { r: m.position, w: ids.byId[m.student_id] || '' }; });
-    S.name = p.full_name || p.username; S.role = p.role;
+    S.name = p.full_name || p.username; S.username = p.username; S.role = p.role; S.realRole = p.role;   // realRole: vai trò thật từ tài khoản
     if (typeof syncDerived === 'function') syncDerived(C);   // làm khớp sơ đồ lớp, ứng viên... với danh sách học sinh mới
     return p;
   }
   var idOf = function (name) { return ids.byName[name]; };
   var nameOf = function (id) { return ids.byId[id]; };
+
+  /* ---------- Tài khoản và cài đặt lớp ---------- */
+  async function setDisplayName(name) { ok(await SB.rpc('set_display_name', { p_name: name })); }
+  async function changePassword(oldPw, newPw) {   // xác nhận mật khẩu hiện tại bằng cách đăng nhập lại, rồi đổi
+    var p = await me();
+    var r = await SB.auth.signInWithPassword({ email: emailOf(p.username), password: oldPw });
+    if (r.error) throw new Error(/invalid|credentials/i.test(r.error.message) ? 'wrong_password' : explain(r.error).message);
+    var u = await SB.auth.updateUser({ password: newPw });
+    if (u.error) throw (/different|same/i.test(u.error.message) ? new Error('same_password') : explain(u.error));
+  }
+  async function saveClass(fields) {   // {name, school, color, logo_url}; chỉ admin (RLS), người khác nhận 0 dòng -> 'forbidden'
+    var p = await me();
+    var r = await SB.from('classes').update(fields).eq('id', p.class_id).select();
+    if (r.error) throw (/duplicate|unique/i.test(r.error.message) ? new Error('name_taken') : explain(r.error));
+    if (!r.data.length) throw new Error('forbidden');
+  }
+  async function addStudent(name) {
+    var p = await me();
+    var r = await SB.from('students').insert({ class_id: p.class_id, full_name: name }).select('id').single();
+    if (r.error) throw (/duplicate|unique/i.test(r.error.message) ? new Error('name_taken') : explain(r.error));
+    ids.byName[name] = r.data.id; ids.byId[r.data.id] = name;
+  }
+  async function removeStudent(name) {
+    var id = ids.byName[name]; if (!id) return;
+    var r = await SB.from('students').delete().eq('id', id).select('id');
+    if (r.error) throw explain(r.error);
+    if (!r.data.length) throw new Error('forbidden');
+    delete ids.byName[name]; delete ids.byId[id];
+  }
 
   /* ---------- Thông báo (cập nhật tức thời) ---------- */
   function ago(iso) {
@@ -177,7 +206,7 @@ var API = (function () {
     return SB.channel('rounds').on('postgres_changes', { event: '*', schema: 'public', table: 'rounds' }, cb).subscribe();
   }
 
-  return { setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
+  return { setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
     loadClass: loadClass, idOf: idOf, nameOf: nameOf, loadNotifs: loadNotifs, onNotif: onNotif, markRead: markRead, notify: notify,
     saveGroups: saveGroups, loadGroups: loadGroups, createElection: createElection, openRound: openRound, openRounds: openRounds,
     castBallot: castBallot, progress: progress, closeRound: closeRound, saveOutcomes: saveOutcomes, onRounds: onRounds };

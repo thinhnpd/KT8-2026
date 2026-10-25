@@ -14,12 +14,25 @@ function extractColor(img){
   if(lum>115){var f=115/lum;r*=f;g*=f;b*=f}
   return '#'+[r,g,b].map(function(v){return('0'+Math.round(v).toString(16)).slice(-2)}).join('');
 }
+/* Thu nhỏ ảnh logo (tối đa 256 px) để lưu gọn trong cơ sở dữ liệu; SVG giữ nguyên */
+function shrinkLogo(img,src){
+  if(/^data:image\/svg/.test(src))return src;
+  var m=256,w=img.naturalWidth||m,h=img.naturalHeight||m,s=Math.min(1,m/Math.max(w,h));
+  var cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(w*s));cv.height=Math.max(1,Math.round(h*s));
+  cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+  return cv.toDataURL('image/png');
+}
 function setLogo(src){
+  if(!admin()){toast('Chỉ admin mới được thay đổi.');return}
   var img=new Image();
   img.onload=function(){
     var col=null;try{col=extractColor(img)}catch(e){}
-    var c=cur();c.logo=src;if(col)c.color=col;
-    applyAccent();render();toast(col?'Đã đổi logo, màu giao diện lấy từ logo':'Đã đổi logo, không tìm được màu nổi bật nên giữ màu cũ');
+    var out=src;try{out=shrinkLogo(img,src)}catch(e){}
+    var c=cur(),newCol=col||c.color;
+    API.saveClass({logo_url:out,color:newCol}).then(function(){
+      c.logo=out;c.color=newCol;
+      applyAccent();render();toast(col?'Đã đổi logo, màu giao diện lấy từ logo':'Đã đổi logo, không tìm được màu nổi bật nên giữ màu cũ');
+    }).catch(function(err){console.error(err);toast(err.message==='forbidden'?'Chỉ admin mới được thay đổi.':'Không lưu được logo, vui lòng thử lại.')});
   };
   img.onerror=function(){toast('Không đọc được ảnh này, thử tệp PNG hoặc JPG khác')};
   img.src=src;
