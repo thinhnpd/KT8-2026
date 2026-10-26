@@ -42,7 +42,7 @@
     'Tin ghim mới: Lịch thi Giữa kỳ HK1':'New pinned post: Semester 1 midterm exam schedule',
     /* đổi mật khẩu */
     'Mật khẩu hiện tại':'Current password','Mật khẩu mới':'New password',
-    'Xác nhận lại mật khẩu mới':'Confirm new password','Đổi mật khẩu':'Change password','Đăng xuất':'Sign out',
+    'Xác nhận lại mật khẩu mới':'Confirm new password','Về trang chủ S Class':'Go to the S Class homepage','Đổi mật khẩu':'Change password','Đăng xuất':'Sign out',
     'Bản xem thử: chưa kiểm tra mật khẩu hiện tại với máy chủ.':'Preview only: the current password is not checked against a server.',
     'Hai mật khẩu mới chưa khớp.':'The two new passwords do not match.',
     'Mật khẩu mới cần ít nhất 8 ký tự.':'The new password needs at least 8 characters.',

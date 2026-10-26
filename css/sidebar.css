@@ -18,3 +18,4 @@
 .it{display:flex;align-items:center;gap:14px;height:40px;margin:2px 8px;padding:0 12px;width:calc(100% - 16px);border:0;border-radius:10px;background:none;color:var(--mu);text-align:left;transition:background .15s,color .15s}
 .it:hover{background:color-mix(in srgb,var(--acc) 10%,transparent);color:var(--tx)}
 .it[aria-current=page]{background:color-mix(in srgb,var(--acc) 18%,transparent);color:var(--acc-t);font-weight:500}
+a.brand{text-decoration:none;color:inherit;cursor:pointer}
