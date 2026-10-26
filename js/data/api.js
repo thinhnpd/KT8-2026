@@ -92,6 +92,7 @@ var API = (function () {
     var st = ok(await SB.from('students').select('id, full_name, subject, talent, student_contacts(email, phone)').eq('class_id', p.class_id).order('full_name'));
     var tc = ok(await SB.from('teachers').select('*').eq('class_id', p.class_id));
     var cm = ok(await SB.from('committee').select('position, student_id').eq('class_id', p.class_id));
+    var mrow = ok(await SB.from('class_maps').select('*').eq('class_id', p.class_id).maybeSingle());   // sơ đồ lớp đã xác nhận (có thể chưa có)
     ids = { byName: {}, byId: {} };
     C.name = 'Lớp ' + cls.name; C.school = cls.school; C.color = cls.color; C.logo = cls.logo_url;
     C.students = st.map(function (s) { ids.byName[s.full_name] = s.id; ids.byId[s.id] = s.full_name; return s.full_name; });
@@ -99,6 +100,12 @@ var API = (function () {
     st.forEach(function (s) { var k = s.student_contacts || {}; C.info[s.full_name] = { email: k.email || '', phone: k.phone || '', subj: s.subject, talent: s.talent }; });
     C.teachers = tc.map(function (t) { return { n: t.name, s: t.subject, email: t.email, phone: t.phone, gv: t.is_homeroom }; });
     C.committee = cm.map(function (m) { return { r: m.position, w: ids.byId[m.student_id] || '' }; });
+    if (mrow) {   // dựng lại sơ đồ từ cơ sở dữ liệu: id học sinh -> tên; học sinh đã bị xóa thành chỗ trống
+      var grid = mrow.layout.map(function (d) { return { seats: d.map(function (id) { return ids.byId[id] || null; }) }; });
+      C.map = { rows: mrow.n_rows, cols: mrow.n_cols, spd: mrow.seats_per_desk, ag: mrow.arrange_gender, rnd: mrow.arrange_random, mode: 'confirmed', grid: grid, saved: cloneG(grid) };
+    } else {      // lớp mới chưa có sơ đồ: bắt đầu từ bước thiết lập
+      C.map = { rows: 4, cols: 5, spd: 2, ag: false, rnd: false, mode: 'setup', grid: [], saved: null };
+    }
     S.name = p.full_name || p.username; S.username = p.username; S.role = p.role; S.realRole = p.role;   // realRole: vai trò thật từ tài khoản
     if (typeof syncDerived === 'function') syncDerived(C);   // làm khớp sơ đồ lớp, ứng viên... với danh sách học sinh mới
     return p;
@@ -133,6 +140,13 @@ var API = (function () {
     if (r.error) throw explain(r.error);
     if (!r.data.length) throw new Error('forbidden');
     delete ids.byName[name]; delete ids.byId[id];
+  }
+
+  /* ---------- Sơ đồ lớp ---------- */
+  async function saveMap(mp, grid) {   // grid: [{seats:[tên|null,...]}]; chỉ admin (kiểm tra ở máy chủ)
+    var layout = grid.map(function (d) { return d.seats.map(function (n) { return n ? (ids.byName[n] || null) : null; }); });
+    var r = await SB.rpc('save_class_map', { p_rows: mp.rows, p_cols: mp.cols, p_spd: mp.spd, p_ag: !!mp.ag, p_rnd: !!mp.rnd, p_layout: layout });
+    if (r.error) throw (/forbidden/.test(r.error.message) ? new Error('forbidden') : explain(r.error));
   }
 
   /* ---------- Thông báo (cập nhật tức thời) ---------- */
@@ -206,7 +220,7 @@ var API = (function () {
     return SB.channel('rounds').on('postgres_changes', { event: '*', schema: 'public', table: 'rounds' }, cb).subscribe();
   }
 
-  return { setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
+  return { saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
     loadClass: loadClass, idOf: idOf, nameOf: nameOf, loadNotifs: loadNotifs, onNotif: onNotif, markRead: markRead, notify: notify,
     saveGroups: saveGroups, loadGroups: loadGroups, createElection: createElection, openRound: openRound, openRounds: openRounds,
     castBallot: castBallot, progress: progress, closeRound: closeRound, saveOutcomes: saveOutcomes, onRounds: onRounds };

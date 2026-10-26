@@ -39,6 +39,7 @@ function vMap(){
   var c=cur(),mp=c.map,a=admin(),n=c.students.length;
   var h=head('Sơ đồ lớp',esc(c.name)+' · '+n+' học sinh')+lockNote();
   var mode=a?mp.mode:'confirmed';
+  if(!a&&!mp.saved)return h+'<section class="card"><div class="empty" style="border:0">'+ic('layout-grid',34)+'<p>Admin chưa tạo sơ đồ lớp.</p></div></section>';
   if(mode==='setup'){
     var step=function(k,t,body){return '<div><div class="stp"><span class="sn">'+k+'</span><b>'+t+'</b></div><div class="fg">'+body+'</div></div>'};
     var cfg='<section class="card"><div class="fg" style="gap:18px">'+
@@ -75,7 +76,13 @@ document.addEventListener('click',function(e){
     var nm=c.students.slice();if(mp.rnd)nm=shuffle(nm);if(mp.ag)nm=interleave(nm,mp.rnd);
     mp.grid=buildGrid(nm,mp.rows,mp.cols,mp.spd);mp.mode='preview';S.sel=null;render();
   }
-  else if(act==='mconfirm'){mp.saved=cloneG(mp.grid);mp.mode='confirmed';S.sel=null;render();toast('Đã xác nhận sơ đồ lớp')}
+  else if(act==='mconfirm'){
+    /* Lưu vào cơ sở dữ liệu trước; chỉ khi lưu xong mới chuyển sang "đã xác nhận" */
+    if(!admin())return;
+    var snap=cloneG(mp.grid);a.disabled=true;
+    API.saveMap(mp,snap).then(function(){mp.saved=snap;mp.mode='confirmed';S.sel=null;render();toast('Đã xác nhận và lưu sơ đồ lớp')})
+      .catch(function(err){console.error(err);a.disabled=false;toast(err.message==='forbidden'?'Chỉ admin mới được thay đổi.':'Không lưu được sơ đồ, vui lòng thử lại.')});
+  }
   else if(act==='mreset'){mp.mode='setup';S.sel=null;render()}
   else if(act==='mnew'){mp.mode='setup';S.sel=null;render()}
   else if(act==='mcancel'){mp.grid=cloneG(mp.saved);mp.mode='confirmed';render()}

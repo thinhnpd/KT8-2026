@@ -1,6 +1,10 @@
 'use strict';
 /* English – trang Class Map (sơ đồ lớp) */
 I18N.add('en',{
+  'Admin chưa tạo sơ đồ lớp.':'The admin has not created a class map yet.',
+  'Đã xác nhận và lưu sơ đồ lớp':'Class map confirmed and saved',
+  'Không lưu được sơ đồ, vui lòng thử lại.':'Could not save the map; please try again.',
+  'Chỉ admin mới được thay đổi.':'Only admins can change this.',
   'Sơ đồ lớp':'Class map','Sơ đồ đã xác nhận.':'Class map confirmed.','Tạo sơ đồ mới':'Create new map',
   'Bàn giáo viên':"Teacher's desk",'BẢNG':'BOARD','Thông tin và bàn học':'Info and desks',
   'Số hàng dọc':'Number of rows','Số hàng ngang':'Number of columns','Mỗi bàn':'Seats per desk',
