@@ -23,7 +23,7 @@ function vSettings(){
     '<div class="g2"><div><label for="fSchool">Trường</label><input type="text" id="fSchool" data-f="school" value="'+esc(c.school)+'"'+dis+'></div><div><label for="fName">Lớp</label><input type="text" id="fName" data-f="name" value="'+esc(c.name)+'"'+dis+'></div></div>'+
     '<div style="margin-top:12px"><label>Logo</label><div class="logo-row"><span class="logo-box">'+(c.logo?'<img alt="Logo hiện tại" src="'+c.logo+'">':ic('image',24))+'</span><div class="fg" style="gap:6px"><div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn gh" style="margin:0;color:var(--tx)'+(a?'':';opacity:.5;cursor:not-allowed')+'">'+ic('upload',15)+'Tải logo lên<input type="file" id="fLogo" accept="image/*" hidden'+dis+'></label><button class="btn gh" data-act="sample"'+dis+'>Thử logo mẫu</button></div><span class="note"><span class="sw"></span>Màu giao diện '+c.color.toUpperCase()+', lấy tự động từ logo</span></div></div></div>'+
     '<div style="margin-top:14px"><div class="frow" style="justify-content:space-between;align-items:center"><label style="margin:0">Danh sách lớp ('+c.students.length+' học sinh)</label></div>'+
-    (a?'<form id="stForm" class="frow" style="margin-top:6px" novalidate><input type="text" id="stNew" placeholder="Họ và tên học sinh mới" autocomplete="off" aria-label="Họ và tên học sinh mới"><button class="btn" type="submit">'+ic('plus',15)+'Thêm</button></form><div class="err" id="stErr"'+(S.stErr?'':' hidden')+'>'+esc(S.stErr)+'</div>':'')+
+    (a?'<form id="stForm" class="fg" style="margin-top:6px" novalidate><div><label for="stNew">Thêm học sinh (mỗi dòng một học sinh)</label><textarea id="stNew" rows="5" placeholder="Mỗi dòng một họ và tên, có thể dán cả danh sách" autocomplete="off" spellcheck="false"></textarea></div><div class="note" id="stSum"></div><div><button class="btn" type="submit">'+ic('plus',15)+'Thêm vào lớp</button></div></form><div class="err" id="stErr"'+(S.stErr?'':' hidden')+'>'+esc(S.stErr)+'</div>':'')+
     '<div class="stl"><table><thead><tr><th>STT</th><th>Họ và tên</th>'+(a?'<th></th>':'')+'</tr></thead><tbody>'+c.students.map(function(s,i){return '<tr><td class="rn">'+(i+1)+'</td><td>'+esc(s)+'</td>'+(a?'<td style="width:34px;text-align:center"><button class="ic-btn" data-act="stDel" data-i="'+i+'" aria-label="Xoá '+esc(s)+'">'+ic('trash',15)+'</button></td>':'')+'</tr>'}).join('')+'</tbody></table></div></div></section>';
 
   h+='<section class="card"><h2>Chuyển tài khoản</h2><p class="mu">Đăng xuất để đăng nhập hoặc đăng ký tài khoản khác.</p><div class="frow" style="align-items:center;flex-wrap:wrap"><button class="btn gh" data-act="logout">'+ic('log-out',15)+'Đăng xuất</button></div></section>';
@@ -84,14 +84,41 @@ document.addEventListener('submit',function(e){
   else if(f.id==='stForm'){
     e.preventDefault();
     if(!admin())return;
-    var v=$('stNew').value.trim().replace(/\s+/g,' ');
-    if(!v){S.stErr='Nhập họ và tên học sinh.'}
-    else if(c.students.indexOf(v)>-1){S.stErr='Tên này đã có trong danh sách.'}
-    else{
-      API.addStudent(v).then(function(){c.students.push(v);syncDerived(c);S.stErr='';render();toast('Đã thêm '+v);var i=$('stNew');if(i)i.focus()})
-        .catch(function(err){console.error(err);S.stErr=err.message==='name_taken'?'Tên này đã có trong danh sách.':'Không lưu được, vui lòng thử lại.';setErr('stErr',S.stErr)});
-      return;
-    }
-    setErr('stErr',S.stErr);
+    var r=parseNames($('stNew').value),msg='';
+    if(!r.add.length&&!r.dup.length&&!r.long.length)msg='Nhập ít nhất một họ và tên.';
+    else if(r.long.length)msg='Có tên dài quá 80 ký tự: '+r.long[0].slice(0,30)+'…';
+    else if(!r.add.length)msg='Tất cả các tên đã có trong danh sách.';
+    else if(r.add.length>100)msg='Mỗi lần thêm tối đa 100 học sinh.';
+    if(msg){S.stErr=msg;setErr('stErr',msg);return}
+    var btn=f.querySelector('button[type=submit]');btn.disabled=true;
+    API.addStudents(r.add).then(function(res){
+      res.added.forEach(function(n){c.students.push(n)});syncDerived(c);
+      var skipped=r.dup.concat(res.skipped);
+      S.stErr=!res.added.length?'Tất cả các tên đã có trong danh sách.':skipped.length?'Đã bỏ qua '+skipped.length+' tên đã có: '+skipped.slice(0,5).join(', ')+(skipped.length>5?'…':''):'';
+      render();
+      if(res.added.length)toast('Đã thêm '+res.added.length+' học sinh');
+    }).catch(function(err){console.error(err);btn.disabled=false;S.stErr='Không lưu được, vui lòng thử lại.';setErr('stErr',S.stErr)});
   }
+});
+
+/* Tách danh sách học sinh theo dòng: bỏ dòng trống, bỏ số thứ tự đầu dòng ("1. An", "2) Bình"), bỏ tên đã có hoặc trùng nhau (không phân biệt hoa thường) */
+function parseNames(text){
+  var have={},seen={},add=[],dup=[],long=[];
+  cur().students.forEach(function(n){have[n.toLowerCase()]=1});
+  String(text).split(/\r?\n/).forEach(function(line){
+    var n=line.replace(/^\s*\d+\s*[.)\-:\t ]+\s*/,'').replace(/\s+/g,' ').trim();
+    if(!n||!/\p{L}/u.test(n))return;
+    var k=n.toLowerCase();
+    if(have[k]||seen[k]){dup.push(n);return}
+    if(n.length>80){long.push(n);return}
+    seen[k]=1;add.push(n);
+  });
+  return {add:add,dup:dup,long:long};
+}
+/* Hiện ngay số học sinh sẽ được thêm khi gõ hoặc dán */
+document.addEventListener('input',function(e){
+  if(!e.target||e.target.id!=='stNew')return;
+  var r=parseNames(e.target.value),t='';
+  if(r.add.length||r.dup.length)t='Sẽ thêm '+r.add.length+' học sinh'+(r.dup.length?' · bỏ qua '+r.dup.length+' dòng đã có hoặc trùng':'');
+  var el=$('stSum');if(el)el.textContent=t;
 });

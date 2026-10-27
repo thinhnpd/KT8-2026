@@ -134,6 +134,24 @@ var API = (function () {
     if (r.error) throw (/duplicate|unique/i.test(r.error.message) ? new Error('name_taken') : explain(r.error));
     ids.byName[name] = r.data.id; ids.byId[r.data.id] = name;
   }
+  async function addStudents(names) {   // thêm nhiều học sinh một lần -> {added:[tên], skipped:[tên đã có]}
+    var p = await me();
+    var rows = names.map(function (n) { return { class_id: p.class_id, full_name: n }; });
+    var r = await SB.from('students').insert(rows).select('id, full_name');
+    if (!r.error) {
+      r.data.forEach(function (s) { ids.byName[s.full_name] = s.id; ids.byId[s.id] = s.full_name; });
+      return { added: r.data.map(function (s) { return s.full_name; }), skipped: [] };
+    }
+    if (!/duplicate|unique/i.test(r.error.message)) throw explain(r.error);
+    /* Có tên trùng (ví dụ admin khác vừa thêm): thêm từng tên để biết tên nào vào được, tên nào bị bỏ qua */
+    var added = [], skipped = [];
+    for (var i = 0; i < rows.length; i++) {
+      var one = await SB.from('students').insert(rows[i]).select('id, full_name').single();
+      if (one.error) { if (/duplicate|unique/i.test(one.error.message)) skipped.push(rows[i].full_name); else throw explain(one.error); }
+      else { ids.byName[one.data.full_name] = one.data.id; ids.byId[one.data.id] = one.data.full_name; added.push(one.data.full_name); }
+    }
+    return { added: added, skipped: skipped };
+  }
   async function removeStudent(name) {
     var id = ids.byName[name]; if (!id) return;
     var r = await SB.from('students').delete().eq('id', id).select('id');
@@ -220,7 +238,7 @@ var API = (function () {
     return SB.channel('rounds').on('postgres_changes', { event: '*', schema: 'public', table: 'rounds' }, cb).subscribe();
   }
 
-  return { saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
+  return { addStudents: addStudents, saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
     loadClass: loadClass, idOf: idOf, nameOf: nameOf, loadNotifs: loadNotifs, onNotif: onNotif, markRead: markRead, notify: notify,
     saveGroups: saveGroups, loadGroups: loadGroups, createElection: createElection, openRound: openRound, openRounds: openRounds,
     castBallot: castBallot, progress: progress, closeRound: closeRound, saveOutcomes: saveOutcomes, onRounds: onRounds };

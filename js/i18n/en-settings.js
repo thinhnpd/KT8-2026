@@ -1,6 +1,12 @@
 'use strict';
 /* English – trang Settings (thông tin lớp, logo, chuyển tài khoản) */
 I18N.add('en',{
+  'Thêm học sinh (mỗi dòng một học sinh)':'Add students (one per line)',
+  'Mỗi dòng một họ và tên, có thể dán cả danh sách':'One full name per line; you can paste a whole list',
+  'Thêm vào lớp':'Add to class',
+  'Nhập ít nhất một họ và tên.':'Enter at least one full name.',
+  'Tất cả các tên đã có trong danh sách.':'All of these names are already in the list.',
+  'Mỗi lần thêm tối đa 100 học sinh.':'You can add at most 100 students at a time.',
   'Thông tin lớp và tài khoản':'Class info and account','Thông tin lớp':'Class info',
   'Họ và tên học sinh mới':'New student full name','Nhập họ và tên học sinh.':'Enter the student full name.',
   'Tải logo lên':'Upload logo','Thử logo mẫu':'Try a sample logo','STT':'No.','Màu giao diện':'Theme color',
@@ -29,6 +35,11 @@ I18N.add('en',{
   'Tên này đã có trong danh sách.':'This name is already in the list.',
   'Đăng xuất để đăng nhập hoặc đăng ký tài khoản khác.':'Sign out to log in or register with another account.'
 },[
+  [/^Sẽ thêm (\d+) học sinh$/,function(n){return 'Will add '+(+n===1?'1 student':n+' students')}],
+  [/^bỏ qua (\d+) dòng đã có hoặc trùng$/,function(n){return 'skipping '+n+(+n===1?' line that is':' lines that are')+' already in the list or duplicated'}],
+  [/^Đã thêm (\d+) học sinh$/,function(n){return 'Added '+(+n===1?'1 student':n+' students')}],
+  [/^Đã bỏ qua (\d+) tên đã có: (.+)$/,function(n,l){return 'Skipped '+n+(+n===1?' name':' names')+' already in the list: '+l}],
+  [/^Có tên dài quá 80 ký tự: (.+)$/,function(n){return 'A name is longer than 80 characters: '+n}],
   [/^Danh sách lớp \((\d+) học sinh\)$/,function(n){return 'Class list ('+(+n===1?'1 student':n+' students')+')'}],
   [/^Màu giao diện (#[0-9A-Fa-f]{3,8}), lấy tự động từ logo$/,function(c){return 'Theme color '+c+', picked automatically from the logo'}]
 ]);
