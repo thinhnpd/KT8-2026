@@ -2,7 +2,7 @@
 /* Công cụ chia nhóm học tập: mở trò chơi ngay trong trang (iframe), không mở tab mới.
    Các iframe được giữ lại khi chuyển trang nên trò chơi không bị tải lại. */
 var CN_GAMES=[
-  {id:'bilan',name:'Bi lăn ngẫu nhiên',desc:'Bi rơi qua các chốt và dừng ngẫu nhiên ở một ô trong danh sách tùy chỉnh.',src:'game_chia_nhom/bi_lan.html'},
+  {id:'bilan',name:'Bi lăn ngẫu nhiên',desc:'Bi rơi qua các chốt và dừng ngẫu nhiên ở một ô trong danh sách tùy chỉnh. Dùng trong các trường hợp chia việc nhanh, trực tiếp tại lớp hay thay thế "vòng quay may mắn"',src:'game_chia_nhom/bi_lan.html'},
   {id:'den',name:'Đèn may mắn',desc:'Các đèn nhấp nháy theo màu của từng nhóm, rồi chia đều thành viên vào các nhóm.',src:'game_chia_nhom/den_may_man.html'}
 ];
 var CN={built:false,frames:{}};
