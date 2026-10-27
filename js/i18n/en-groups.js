@@ -2,6 +2,7 @@
 /* English – trang Groups (gồm cả công cụ chia nhóm học tập) */
 I18N.add('en',{
   'Nhóm':'Groups',
+  'Môn học':'Subject','Xem nhóm':'View groups','Đang tải...':'Loading...','Không tải được dữ liệu. Vui lòng thử lại.':'Could not load the data. Please try again.',
   'Lưu bộ nhóm này cho môn:':'Save this group set for subject:','Lưu':'Save',
   'Toán':'Maths','Ngữ Văn':'Literature','Ngữ văn':'Literature','Tiếng Anh':'English','Vật lý':'Physics','Hoá học':'Chemistry','Sinh học':'Biology','Lịch sử':'History',
   'Sắp có':'Coming soon','chưa bầu':'not elected yet',
@@ -15,6 +16,10 @@ I18N.add('en',{
   'Các đèn nhấp nháy theo màu của từng nhóm, rồi chia đều thành viên vào các nhóm.':'Lights flash in each group\u2019s colour, then the members are divided evenly into the groups.',
   '← Quay lại':'← Back'
 },[
+  [/^(.+) chưa có bộ nhóm học tập\.$/,function(s){return I18N.tr(s)+' has no study groups yet.'}],
+  [/^Nhóm (\d+)$/,function(n){return 'Group '+n}],
+  [/^Chia bằng (.+)$/,function(m){return 'Made with '+I18N.tr(m)}],
+  [/^Lưu ngày (.+)$/,function(d){return 'Saved on '+d}],
   [/^Đã lưu cho môn (.+)\.$/,function(s){return 'Saved for '+I18N.tr(s)+'.'}],
   [/^Đã lưu nhóm học tập môn (.+)$/,function(s){return 'Study groups saved for '+I18N.tr(s)}],
   [/^(\d+) tên không có trong danh sách lớp sẽ bị bỏ qua\.$/,function(n){return n+(+n===1?' name is':' names are')+' not in the class list and will be skipped.'}],
