@@ -16,3 +16,14 @@
 .dday>b{font-weight:500}
 .dday.today{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--pn));color:var(--acc-t)}
 .dday.today .mu{color:inherit;opacity:.8}
+
+/* Admin chỉnh sửa: nút sửa/xoá, hộp thoại trực nhật */
+.bx h5 .grow{flex:1}
+.itm{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.racts{display:inline-flex;gap:2px;flex:none;white-space:nowrap}
+td.racts{display:table-cell;width:56px;text-align:right}
+.dtask{border:1px solid var(--bd);border-radius:8px;padding:8px;margin-bottom:8px}
+.dth{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.dtr{display:grid;grid-template-columns:78px 1fr 1fr;gap:6px;align-items:center;margin-top:4px;font-size:12px}
+.dfoot{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+@media (max-width:640px){.dtr{grid-template-columns:1fr 1fr}.dtr>.mu{grid-column:1/-1}}

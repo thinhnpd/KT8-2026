@@ -21,6 +21,18 @@ I18N.add('en',{
   'Nhập tiêu đề trước khi đăng.':'Enter a title before posting.','Đăng tin':'Post',
   'Đã đăng tin, trạng thái đã đọc được đặt lại':'Posted; read status has been reset',
   'Tìm kiếm':'Search','Tuần trước':'Previous week','Tuần sau':'Next week',
+  /* admin chỉnh sửa */
+  'Chỉnh sửa thông tin':'Edit info','Chỉnh sửa trực nhật':'Edit duty roster','Chỉnh sửa':'Edit','Xoá':'Delete',
+  'Xác nhận xoá':'Confirm deletion','Nhãn tin ghim':'Pin label','Tên nhiệm vụ':'Task name','Xoá nhiệm vụ':'Delete task',
+  'Thêm nhiệm vụ':'Add task','Về phân công tự động':'Back to automatic roster','Nhập tên cho mọi nhiệm vụ.':'Enter a name for every task.',
+  'Chưa có phân công trực nhật.':'No duty roster yet.','Đã cập nhật, trạng thái đã đọc được đặt lại':'Updated; read status has been reset',
+  'Đã lưu phân công trực nhật':'Duty roster saved','Đã về phân công tự động':'Switched back to the automatic roster','Đã xoá':'Deleted',
+  'Bạn chắc chắn muốn xoá sự kiện này?':'Are you sure you want to delete this event?',
+  'Bạn chắc chắn muốn xoá tin ghim này?':'Are you sure you want to delete this pinned post?',
+  'Bạn chắc chắn muốn xoá nhắc nhở này?':'Are you sure you want to delete this reminder?',
+  'Chỉ admin mới được thay đổi.':'Only admins can make changes.',
+  'Chưa lưu được lên máy chủ: hãy chạy sql/update-5.sql trong Supabase.':'Not saved to the server yet: run sql/update-5.sql in Supabase.',
+  'Không lưu được lên máy chủ, vui lòng thử lại.':'Could not save to the server, please try again.',
   /* dữ liệu mẫu */
   'Chào cờ đầu tuần':'Monday flag ceremony',
   'Sinh hoạt lớp và phổ biến kế hoạch cắm trại':'Class meeting and camping plan briefing',
@@ -43,5 +55,6 @@ I18N.add('en',{
   'Nộp quỹ lớp trước ngày 16/10':'Pay the class fund before 16/10',
   'Thu bài kiểm tra tuần trước':"Collect last week's test papers"
 },[
-  [/^Đã đọc: (.+)$/,function(n){return 'Read: '+n}]
+  [/^Đã đọc: (.+)$/,function(n){return 'Read: '+n}],
+  [/^Tệp hiện tại: (.+)\. Chọn tệp mới để thay thế\.$/,function(f){return 'Current file: '+f+'. Choose a new file to replace it.'}]
 ]);

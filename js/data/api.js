@@ -193,6 +193,23 @@ var API = (function () {
     ok(await SB.from('notifications').insert({ class_id: p.class_id, text: text, page: page || 'event', icon: icon || 'calendar-event', created_by: p.id }));
   }
 
+  /* ---------- Bản tin tuần: sự kiện, tin ghim, nhắc nhở, trực nhật (mỗi tuần một dòng JSON) ---------- */
+  async function loadWeeks() {   // -> {tuần: {pins, rem, ev, duty?}}
+    var rows = ok(await SB.from('class_weeks').select('week, data'));
+    var out = {}; rows.forEach(function (r) { out[r.week] = r.data; });
+    return out;
+  }
+  async function saveWeek(week, data) {   // chỉ admin (RLS); người khác nhận 0 dòng -> 'forbidden'
+    var p = await me();
+    var r = await SB.from('class_weeks').upsert({ class_id: p.class_id, week: week, data: data, updated_by: p.id, updated_at: new Date().toISOString() }).select('week');
+    if (r.error) throw explain(r.error);
+    if (!r.data.length) throw new Error('forbidden');
+  }
+  function onWeeks(cb) {   // cb(tuần, dữ liệu) khi admin khác sửa
+    return SB.channel('weeks').on('postgres_changes', { event: '*', schema: 'public', table: 'class_weeks' },
+      function (e) { if (e.new && e.new.week != null) cb(e.new.week, e.new.data); }).subscribe();
+  }
+
   /* ---------- Nhóm học tập (mỗi môn một bộ) ---------- */
   async function saveGroups(subject, method, groups) {   // groups: [{no, color, members:[tên học sinh]}]
     var payload = groups.map(function (g) { return { no: g.no, color: g.color, members: g.members.map(idOf).filter(Boolean) }; });
@@ -239,7 +256,7 @@ var API = (function () {
   }
 
   return { addStudents: addStudents, saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
-    loadClass: loadClass, idOf: idOf, nameOf: nameOf, loadNotifs: loadNotifs, onNotif: onNotif, markRead: markRead, notify: notify,
+    loadClass: loadClass, idOf: idOf, nameOf: nameOf, loadNotifs: loadNotifs, onNotif: onNotif, markRead: markRead, notify: notify, loadWeeks: loadWeeks, saveWeek: saveWeek, onWeeks: onWeeks,
     saveGroups: saveGroups, loadGroups: loadGroups, createElection: createElection, openRound: openRound, openRounds: openRounds,
     castBallot: castBallot, progress: progress, closeRound: closeRound, saveOutcomes: saveOutcomes, onRounds: onRounds };
 })();

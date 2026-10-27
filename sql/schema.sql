@@ -390,13 +390,30 @@ grant execute on function close_round(uuid) to authenticated;
 grant execute on function my_class() to authenticated;
 grant execute on function is_admin() to authenticated;
 
+-- ---------- Bản tin tuần: sự kiện, tin ghim, nhắc nhở, trực nhật (admin sửa được) ----------
+-- Mỗi lớp, mỗi tuần một dòng. data = {"pins":[], "rem":[], "ev":[], "duty":{"tasks":[], "cells":{}}}
+create table if not exists class_weeks (
+  class_id uuid not null references classes(id) on delete cascade,
+  week int not null,
+  data jsonb not null default '{}'::jsonb,
+  updated_by uuid references profiles(id) on delete set null,
+  updated_at timestamptz not null default now(),
+  primary key (class_id, week)
+);
+alter table class_weeks enable row level security;
+drop policy if exists class_weeks_read on class_weeks;
+drop policy if exists class_weeks_admin on class_weeks;
+create policy class_weeks_read on class_weeks for select using (class_id = my_class());
+create policy class_weeks_admin on class_weeks for all
+  using (class_id = my_class() and is_admin()) with check (class_id = my_class() and is_admin());
+
 -- ---------- Cập nhật tức thời (Realtime) ----------
-alter publication supabase_realtime add table notifications, rounds, elections;
+alter publication supabase_realtime add table notifications, rounds, elections, class_weeks;
 
 -- ---------- Ví dụ tạo lớp đầu tiên (chạy tay trong SQL Editor, đổi mã cho riêng bạn) ----------
 -- with c as (insert into classes(name, school) values ('10A5', 'THPT Chuyên Lê Quý Đôn') returning id)
 -- insert into class_secrets(class_id, admin_code_hash, join_code_hash)
 --   select id, crypt('MA-QUAN-TRI-DAI-VA-NGAU-NHIEN', gen_salt('bf')), crypt('MA-HOC-SINH-KHAC', gen_salt('bf')) from c;
 
--- ---------- Kiểm tra: danh sách bảng vừa tạo (phải có đúng 18 dòng trong bảng kết quả) ----------
+-- ---------- Kiểm tra: danh sách bảng vừa tạo (phải có đúng 19 dòng trong bảng kết quả) ----------
 select tablename from pg_tables where schemaname = 'public' order by tablename;

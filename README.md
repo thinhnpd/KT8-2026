@@ -46,3 +46,8 @@ core/config → utils → icons → data/* → core/state → components/* → p
 - Thêm chữ mới: thêm vào `dict` hoặc `patterns` của file trang tương ứng. Chữ chưa có bản dịch sẽ hiện nguyên tiếng Việt, không gây lỗi.
 - Thêm ngôn ngữ mới (ví dụ `ja`): tạo `js/i18n/ja-*.js` dùng `I18N.add('ja', ...)`, thêm nút `<button data-lang="ja">` trong `index.html`.
 - Tên riêng, email, tên tệp và nội dung người dùng tự nhập được giữ nguyên.
+
+## Admin chỉnh sửa sự kiện, trực nhật, việc cần làm
+- Trang Sự kiện: admin thấy nút sửa / xoá ở từng sự kiện, tin ghim và nhắc nhở (việc cần làm), và nút sửa ở khung "Trực nhật trong tuần" (đổi người, đổi tên / thêm / xoá nhiệm vụ, hoặc quay về phân công tự động). Tuần đã qua chỉ xem.
+- Thành viên thường không thấy các nút này; quyền ghi cũng được chặn ở máy chủ (RLS).
+- Dữ liệu lưu ở bảng `class_weeks`. **Chạy `sql/update-5.sql` một lần** trong Supabase > SQL Editor nếu bạn đã chạy `schema.sql` trước đây (cài mới thì `schema.sql` đã có sẵn). Chưa chạy thì chỉnh sửa vẫn hiện trên máy bạn nhưng sẽ mất khi tải lại trang.

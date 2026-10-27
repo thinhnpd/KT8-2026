@@ -6,6 +6,7 @@ function holder(c,r){var m=c.committee.filter(function(x){return x.r===r})[0];re
 function cloneG(g){return g.map(function(d){return{seats:d.seats.slice()}})}
 function buildGrid(names,rows,cols,spd){var d=[],idx=0;for(var i=0;i<rows*cols;i++){var s=[];for(var k=0;k<spd;k++){s.push(names[idx]||null);idx++}d.push({seats:s})}return d}
 function wkData(c,w){return c.weeks[w]||(c.weeks[w]={pins:[],rem:[],ev:[]})}
+function normWeek(x){x=x||{};var o={pins:x.pins||[],rem:x.rem||[],ev:x.ev||[]};if(x.duty&&x.duty.tasks)o.duty={tasks:x.duty.tasks,cells:x.duty.cells||{}};return o}
 function rd(c,w){return c.reads[w]||(c.reads[w]={n:0,me:false})}
 function fixGrid(g,set,students){
   if(!g)return;
