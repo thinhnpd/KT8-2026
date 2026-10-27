@@ -23,7 +23,7 @@ function dutyHTML(c,wk){
   var cols=[0,1,2,3,4].map(function(d){
     return '<div class="dday'+(d===t0?' today':'')+'"><b>'+DAYS[d]+' '+ds(wk,d)+(d===t0?' · Hôm nay':'')+'</b>'+D.tasks.map(function(t,r){
       var seen={},who=(D.cells[r+'_'+d]||[]).filter(function(x){if(!set[x]||seen[x])return false;seen[x]=1;return true});
-      return '<div><span class="mu">'+esc(t)+'</span><br>'+(who.length?who.map(function(x){return esc(short(x))}).join(', '):'<span class="mu">-</span>')+'</div>'}).join('')+'</div>'}).join('');
+      return '<div><span class="mu">'+esc(t)+'</span><br>'+(who.length?who.map(function(x){return esc(last2(x))}).join(', '):'<span class="mu">-</span>')+'</div>'}).join('')+'</div>'}).join('');
   return '<div class="bx" style="margin-bottom:10px"><h5>'+ic('clipboard-check',13)+'Trực nhật trong tuần<span class="grow"></span>'+(can?'<button class="ic-btn ed" data-act="dutyEdit" aria-label="Chỉnh sửa trực nhật">'+ic('edit',15)+'</button>':'')+'</h5>'+
     (D.tasks.length?'<div class="scroll"><div class="dutyg">'+cols+'</div></div>':'<p class="mu">Chưa có phân công trực nhật.</p>')+'</div>';
 }
