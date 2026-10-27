@@ -1,6 +1,7 @@
 'use strict';
 /* English – trang Groups (gồm cả công cụ chia nhóm học tập) */
 I18N.add('en',{
+  'Nhóm':'Groups',
   'Lưu bộ nhóm này cho môn:':'Save this group set for subject:','Lưu':'Save',
   'Toán':'Math','Ngữ văn':'Literature','Tiếng Anh':'English','Vật lý':'Physics','Hoá học':'Chemistry','Sinh học':'Biology','Lịch sử':'History',
   'Sắp có':'Coming soon','chưa bầu':'not elected yet',

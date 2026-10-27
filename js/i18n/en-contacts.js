@@ -1,5 +1,5 @@
 'use strict';
-/* English – trang Directory (danh bạ) */
+/* English – trang Contacts (danh bạ) */
 I18N.add('en',{
   'Danh bạ':'Contacts','SĐT / Zalo':'Phone / Zalo','Số điện thoại / Zalo':'Phone number / Zalo',
   'Sở trường':'Talents','Môn dạy / hỗ trợ':'Subject taught / supported','Môn dạy':'Subject taught',
