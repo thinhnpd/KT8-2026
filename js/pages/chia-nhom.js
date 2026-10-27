@@ -56,16 +56,16 @@ window.addEventListener('message',function(e){
 function cnAskSave(d){
   var box=$('cnSave'),unknown=0;
   d.groups.forEach(function(g){g.members.forEach(function(m){if(!API.idOf(m))unknown++})});
-  box.innerHTML='<span>Lưu bộ nhóm này cho môn:</span> <select id="cnSubj">'+SUBJ.map(function(s){return '<option>'+esc(s)+'</option>'}).join('')+'</select> '+
+  box.innerHTML='<span>Lưu bộ nhóm này cho môn:</span> <select id="cnSubj">'+GSUBJ.map(function(s){return '<option value="'+s.c+'"'+(s.c===d.subject?' selected':'')+'>'+esc(s.vi)+'</option>'}).join('')+'</select> '+
     '<button class="cn-btn" id="cnSaveBtn">Lưu</button> <span class="mu" id="cnSaveMsg">'+(unknown?unknown+' tên không có trong danh sách lớp sẽ bị bỏ qua.':'')+'</span>';
   box.hidden=false;
   $('cnSaveBtn').onclick=async function(){
-    var b=$('cnSaveBtn'),subj=$('cnSubj').value;b.disabled=true;
+    var b=$('cnSaveBtn'),sl=$('cnSubj'),subj=sl.value,nm=sl.options[sl.selectedIndex].text;b.disabled=true;
     try{
       await API.saveGroups(subj,d.method,d.groups);
-      await API.notify('Nhóm học tập môn '+subj+' đã được cập nhật','groups','users');
-      $('cnSaveMsg').textContent='Đã lưu cho môn '+subj+'.';
-      if(typeof toast==='function')toast('Đã lưu nhóm học tập môn '+subj);
+      await API.notify('Nhóm học tập môn '+nm+' đã được cập nhật','groups','users');
+      $('cnSaveMsg').textContent='Đã lưu cho môn '+nm+'.';
+      if(typeof toast==='function')toast('Đã lưu nhóm học tập môn '+nm);
     }catch(err){console.error(err);$('cnSaveMsg').textContent='Không lưu được. Vui lòng thử lại.';b.disabled=false}
   };
 }

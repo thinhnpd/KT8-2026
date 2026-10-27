@@ -81,7 +81,7 @@ create table notification_reads (
 create table group_sets (
   id uuid primary key default gen_random_uuid(),
   class_id uuid not null references classes(id) on delete cascade,
-  subject text not null,
+  subject text not null check (subject in ('To','Va','An','Su')),   -- mã môn: To=Toán, Va=Ngữ Văn, An=Tiếng Anh, Su=Lịch sử
   method text not null check (method in ('lights','ball','manual')),
   is_current boolean not null default true,
   created_by uuid references profiles(id) on delete set null,
@@ -204,6 +204,7 @@ language plpgsql security definer set search_path = public, extensions as $$
 declare cid uuid := my_class(); sid uuid; gid uuid; g jsonb;
 begin
   if not is_admin() then raise exception 'forbidden'; end if;
+  if p_subject not in ('To','Va','An','Su') then raise exception 'bad_subject'; end if;
   update group_sets set is_current = false where class_id = cid and subject = p_subject and is_current;
   insert into group_sets(class_id, subject, method, created_by) values (cid, p_subject, p_method, auth.uid()) returning id into sid;
   for g in select * from jsonb_array_elements(p_groups) loop

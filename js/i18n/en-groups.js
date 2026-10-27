@@ -3,7 +3,7 @@
 I18N.add('en',{
   'Nhóm':'Groups',
   'Lưu bộ nhóm này cho môn:':'Save this group set for subject:','Lưu':'Save',
-  'Toán':'Math','Ngữ văn':'Literature','Tiếng Anh':'English','Vật lý':'Physics','Hoá học':'Chemistry','Sinh học':'Biology','Lịch sử':'History',
+  'Toán':'Maths','Ngữ Văn':'Literature','Ngữ văn':'Literature','Tiếng Anh':'English','Vật lý':'Physics','Hoá học':'Chemistry','Sinh học':'Biology','Lịch sử':'History',
   'Sắp có':'Coming soon','chưa bầu':'not elected yet',
   'Mỗi nhóm sẽ có trang riêng. Phần này đang thiết kế nên chưa mở được.':'Each group will have its own page. This part is still being designed, so it cannot be opened yet.',
   'Công cụ chia nhóm học tập':'Study group creator',

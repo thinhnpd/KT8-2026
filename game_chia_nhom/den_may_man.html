@@ -110,6 +110,8 @@ html.embed,html.embed body,.embed .app{background:transparent!important}
         <div class="row"><label for="md">Chế độ</label><select id="md"><option value="one">Chọn một ô</option><option value="grp">Chia nhóm</option></select></div>
         <div class="row" id="gr" hidden><label for="g">Số nhóm</label><input id="g" type="number" min="2" max="12" value="4"></div>
         <div class="row" id="gcr" hidden style="align-items:flex-start"><label>Màu từng nhóm</label><div class="chips" id="gcs"></div></div>
+        <div class="row" id="sjr" hidden><label for="sj">Môn học</label><select id="sj"></select></div>
+        <div class="note" id="sjn" hidden></div>
         <div class="row" style="align-items:flex-start"><label for="lst" id="ll">Danh sách ô<br>(mỗi dòng một ô)</label><div style="flex:1;min-width:0"><textarea id="lst" rows="5">Tổ 1
 Tổ 2
 Tổ 3
@@ -151,7 +153,7 @@ function render(){
   });
 }
 function setOn(i){lamps.forEach((l,k)=>{l.classList.toggle('on',k===i);l.classList.remove('win')})}
-function setLock(v){['lst','d','go','md','g'].forEach(i=>$(i).disabled=v);document.querySelectorAll('#gcs input').forEach(x=>x.disabled=v)}
+function setLock(v){['lst','d','go','md','g','sj'].forEach(i=>$(i).disabled=v);document.querySelectorAll('#gcs input').forEach(x=>x.disabled=v)}
 function showHist(){
   const ol=$('hist');ol.textContent='';
   hist.slice(-8).reverse().forEach(t=>{const li=document.createElement('li');li.textContent=t;ol.appendChild(li)});
@@ -200,7 +202,7 @@ function showGroups(g,fin){
   $('gres').hidden=false;$('kq').textContent='Đã chia '+labels.length+' người thành '+g+' nhóm.';
   /* Gửi kết quả cho trang chủ để lưu theo môn (chỉ khi được nhúng trong iframe) */
   try{if(parent!==window){var gp=[];for(var c2=0;c2<g;c2++)gp.push({no:c2+1,color:gcols[c2],members:labels.filter(function(_,i){return fin[i]===c2})});
-    parent.postMessage({type:'groups:done',method:'lights',groups:gp},location.origin)}}catch(e){}
+    parent.postMessage({type:'groups:done',method:'lights',subject:$('sj').value||undefined,groups:gp},location.origin)}}catch(e){}
 }
 function spinGroups(){
   const g=Math.floor(+$('g').value),m=labels.length,dur=+$('d').value*1000,t0=performance.now();
@@ -252,7 +254,16 @@ $('th').onclick=()=>{app.dataset.theme=app.dataset.theme==='dark'?'light':'dark'
 if(matchMedia('(prefers-color-scheme:dark)').matches)app.dataset.theme='dark';
 readList();render();showHist();
 /* Khi chạy trong trang chủ: nút điền sẵn danh sách học sinh của lớp */
-try{if(parent!==window&&parent.C&&parent.C.students){$('useCls').hidden=false;$('useCls').onclick=function(){$('lst').value=parent.C.students.join('\n');$('lst').dispatchEvent(new Event('input'))}}}catch(e){}
+try{if(parent!==window&&parent.C&&parent.C.students){
+  var pr=parent,fillCls=function(){$('lst').value=pr.C.students.join('\n');$('lst').dispatchEvent(new Event('input'))};
+  $('useCls').hidden=false;$('useCls').onclick=fillCls;
+  $('md').value='grp';$('md').dispatchEvent(new Event('change'));fillCls();   /* mặc định: chia nhóm bằng danh sách lớp từ CSDL */
+  if(pr.admin&&pr.admin()&&pr.GSUBJ){
+    $('sj').innerHTML=pr.GSUBJ.map(function(s){return '<option value="'+s.c+'">'+s.vi+'</option>'}).join('');$('sjr').hidden=false;
+    var svd=null,sjNote=function(){var s=svd&&svd[$('sj').value],n=$('sjn');n.hidden=!s;if(s)n.textContent='Môn này đã có bộ nhóm ('+s.groups.length+' nhóm). Lưu bộ mới sẽ thay thế bộ cũ.'};
+    $('sj').onchange=sjNote;pr.API.loadGroups().then(function(r){svd=r;sjNote()}).catch(function(){});
+  }
+}}catch(e){}
 /* Đồng bộ giao diện với trang chủ khi được nhúng */
 if(window.self!==window.top){try{
   const root=parent.document.documentElement;

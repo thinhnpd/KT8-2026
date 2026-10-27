@@ -3,6 +3,7 @@
 var CUR=12;
 var DAYS=['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
 var CL={'Sinh hoạt':'g','Bài tập':'y','Kiểm tra':'r','Sự kiện':'b'};
+var GSUBJ=[{c:'To',vi:'Toán',en:'Maths'},{c:'Va',vi:'Ngữ Văn',en:'Literature'},{c:'An',vi:'Tiếng Anh',en:'English'},{c:'Su',vi:'Lịch sử',en:'History'}];   /* môn có bộ nhóm học tập; c = mã lưu trong CSDL */
 var SUBJ=['Toán','Ngữ văn','Tiếng Anh','Vật lý','Hoá học','Sinh học','Lịch sử'];
 var POSITIONS=['Lớp trưởng','Lớp phó học tập','Lớp phó lao động','Bí thư chi đoàn','Thủ quỹ','Tổ trưởng Tổ 1','Tổ trưởng Tổ 2','Tổ trưởng Tổ 3','Tổ trưởng Tổ 4'];
 var ADMIN_POS=['Lớp trưởng','Lớp phó học tập','Bí thư chi đoàn'];

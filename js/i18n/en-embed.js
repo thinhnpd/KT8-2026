@@ -7,6 +7,8 @@
     exact: {
       /* ---- Dùng chung ---- */
       'Thiết lập': 'Settings',
+      'Môn học': 'Subject',
+      'Toán': 'Maths', 'Ngữ Văn': 'Literature', 'Tiếng Anh': 'English', 'Lịch sử': 'History',
       'Bắt đầu': 'Start',
       'Danh sách ô': 'Slot list',
       '(mỗi dòng một ô)': '(one slot per line)',
@@ -85,6 +87,7 @@
       'Kết quả vừa công bố': 'Latest result'
     },
     rules: [
+      [/^Môn này đã có bộ nhóm \((\d+) nhóm\)\. Lưu bộ mới sẽ thay thế bộ cũ\.$/, 'This subject already has a group set ($1 groups). Saving a new one will replace it.'],
       /* ---- Đếm số ô / người (Bi lăn, Đèn may mắn) ---- */
       [/^Tối đa (\d+) ô, chỉ dùng (\d+) dòng đầu$/, 'Maximum $1 slots; only the first $2 lines are used'],
       [/^(\d+) (ô|người)(?: \(chỉ dùng (\d+) dòng đầu\))?(?: · mỗi nhóm (\d+)(?:–(\d+))? người)?$/,
