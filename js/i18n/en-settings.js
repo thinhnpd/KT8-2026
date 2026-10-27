@@ -13,8 +13,6 @@ I18N.add('en',{
   'Chuyển tài khoản':'Switch account',
   'Thoát khỏi lớp này để đăng nhập hoặc đăng ký tài khoản khác.':'Leave this class to sign in or register with another account.',
   'Chưa mở, sẽ làm cùng màn hình đăng nhập và đăng ký.':'Not available yet; it will arrive with the sign-in and register screens.',
-  'Xem thử vai trò:':'Preview role:',
-  'Đang xem với vai trò Admin':'Viewing as Admin','Đang xem với vai trò Thành viên':'Viewing as Member',
   'Chỉ dùng để xem thử, bản thật lấy từ tài khoản đăng nhập.':'For preview only; the real role comes from the signed-in account.',
   'Bạn đang xem với vai trò thành viên, chỉ admin mới chỉnh sửa được.':'You are viewing as a member; only admins can edit.',
   'Đã đổi logo, màu giao diện lấy từ logo':'Logo changed; the theme color was taken from the logo',
@@ -28,7 +26,6 @@ I18N.add('en',{
   'Hai mật khẩu mới chưa khớp.':'The two new passwords do not match.',
   'Mật khẩu hiện tại không đúng.':'The current password is incorrect.',
   'Mật khẩu mới phải khác mật khẩu hiện tại.':'The new password must be different from the current one.',
-  'Chỉ đổi cách hiển thị, quyền thật lấy từ tài khoản đăng nhập.':'Only changes how the page looks; real permissions come from the signed-in account.',
   /* lưu thay đổi */
   'Không lưu được, vui lòng thử lại.':'Could not save; please try again.','Không lưu được logo, vui lòng thử lại.':'Could not save the logo; please try again.',
   'Chỉ admin mới được thay đổi.':'Only admins can change this.','Tên lớp này đã được dùng.':'This class name is already in use.',
