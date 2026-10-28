@@ -109,9 +109,11 @@ create table elections (
   advance int[] not null default '{}',             -- số người đi tiếp sau mỗi vòng (trừ vòng cuối)
   status text not null default 'open' check (status in ('open','closed')),
   deadline timestamptz,
+  state jsonb not null default '{}'::jsonb,         -- ứng viên, luật, vòng hiện tại, lịch sử kết quả (admin ghi, cả lớp đọc; không chứa phiếu từng người)
   created_by uuid references profiles(id) on delete set null,
   created_at timestamptz not null default now()
 );
+create unique index elections_one_open on elections(class_id) where status = 'open';   -- mỗi lớp một cuộc bầu đang mở
 create table rounds (
   id uuid primary key default gen_random_uuid(),
   election_id uuid not null references elections(id) on delete cascade,
@@ -334,7 +336,7 @@ alter table study_group_members enable row level security;
 alter table elections enable row level security;
 alter table rounds enable row level security;
 alter table round_candidates enable row level security;
-alter table ballot_receipts enable row level security;    -- không có chính sách: chỉ cast_ballot ghi được
+alter table ballot_receipts enable row level security;    -- chỉ cast_ballot ghi được; mỗi người chỉ đọc được dòng của chính mình (receipts_own)
 alter table ballots enable row level security;            -- không có chính sách: không ai đọc được từng phiếu
 
 create policy classes_read on classes for select using (id = my_class());
@@ -373,6 +375,7 @@ create policy elections_admin on elections for all using (class_id = my_class() 
 create policy rounds_read on rounds for select using (exists (select 1 from elections e where e.id = election_id and e.class_id = my_class()));
 create policy rcands_read on round_candidates for select using (exists (
   select 1 from rounds r join elections e on e.id = r.election_id where r.id = round_id and e.class_id = my_class()));
+create policy receipts_own on ballot_receipts for select using (voter_id = auth.uid());   -- chỉ đọc dòng "đã bỏ phiếu" của chính mình
 create policy rcands_admin_update on round_candidates for update using (is_admin() and exists (
   select 1 from rounds r join elections e on e.id = r.election_id where r.id = round_id and e.class_id = my_class()));
 

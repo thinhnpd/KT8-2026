@@ -84,7 +84,27 @@
       'Đi tiếp': 'Advances',
       'Đồng điểm': 'Tied',
       'Kết quả cuối cùng': 'Final result',
-      'Kết quả vừa công bố': 'Latest result'
+      'Kết quả vừa công bố': 'Latest result',
+      'Tên cuộc bầu': 'Vote title',
+      'Bỏ phiếu lớp': 'Class vote',
+      'Chọn tất cả': 'Select all',
+      'Bỏ chọn': 'Clear',
+      'Số ứng viên': 'Number of candidates',
+      'Cuộc bầu đang diễn ra': 'Vote in progress',
+      'Huỷ cuộc bầu': 'Cancel vote',
+      'Bấm lần nữa để huỷ': 'Press again to cancel',
+      'Gửi phiếu của tôi': 'Submit my vote',
+      'Bấm lần nữa để kết thúc vòng': 'Press again to end the round',
+      'Bạn đã bỏ phiếu ở vòng này.': 'You have voted in this round.',
+      'Bạn chưa bỏ phiếu. Chọn một ứng viên rồi gửi phiếu.': 'You have not voted yet. Pick a candidate, then submit your vote.',
+      'Số phiếu từng ứng viên chỉ hiện sau khi kết thúc vòng. Admin chỉ bỏ phiếu cho chính mình, không nhập số phiếu.': 'Votes per candidate only appear after the round ends. Admins only cast their own vote and do not enter vote counts.',
+      'Cuộc bầu bị lỗi: không có vòng nào đang mở. Hãy huỷ cuộc bầu rồi tạo lại.': 'This vote is broken: no round is open. Cancel it and create a new one.',
+      'Đang có một cuộc bỏ phiếu khác đang mở. Đã tải lại.': 'Another vote is already open. Reloaded.',
+      'Không bắt đầu được. Hãy thử lại.': 'Could not start. Please try again.',
+      'Không gửi được phiếu. Hãy thử lại.': 'Could not send your vote. Please try again.',
+      'Không huỷ được. Hãy thử lại.': 'Could not cancel. Please try again.',
+      'Không thực hiện được. Đang tải lại trạng thái.': 'Could not complete that. Reloading the state.',
+      'Không tải được dữ liệu bỏ phiếu. Vui lòng tải lại trang.': 'Could not load voting data. Please reload the page.'
     },
     rules: [
       [/^Môn này đã có bộ nhóm \((\d+) nhóm\)\. Lưu bộ mới sẽ thay thế bộ cũ\.$/, 'This subject already has a group set ($1 groups). Saving a new one will replace it.'],
@@ -108,6 +128,7 @@
 
       /* ---- Bỏ phiếu: luật ---- */
       [/^(\d+) ứng viên \(tối đa (\d+)\)$/, '$1 candidates (max $2)'],
+      [/^Đã bỏ phiếu: (\d+)\/(\d+)$/, 'Voted: $1/$2'],
       [/^Vòng (\d+) \(vòng cuối\) luôn còn đúng 2 ứng viên để bỏ phiếu 50\/50\.$/, 'Round $1 (the final round) always has exactly 2 candidates for a 50/50 vote.'],
       [/^Sau vòng (\d+)$/, 'After round $1'],
       [/^Cần ít nhất (\d+) ứng viên cho (\d+) vòng\.$/, 'At least $1 candidates are required for $2 rounds.'],

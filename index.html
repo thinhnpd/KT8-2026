@@ -12,7 +12,12 @@
   <script src="js/data/api.js"></script>
   <script>
     API.session().then(function (s) {
-      if (!s) location.replace('auth/login.html'); else document.documentElement.style.visibility = 'visible';
+      if (!s) { location.replace('auth/login.html'); return; }
+      /* Tài khoản học sinh có giao diện riêng (chỉ xem cuộc bỏ phiếu hiện tại và bỏ phiếu) */
+      return API.me().then(function (p) {
+        if (p && p.role === 'student') location.replace('bo_phieu/student.html');
+        else document.documentElement.style.visibility = 'visible';
+      });
     }).catch(function () { location.replace('auth/login.html'); });
   </script>
 

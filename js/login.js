@@ -1,7 +1,8 @@
 /* Trang đăng nhập: đổi giao diện, đổi ngôn ngữ, kiểm tra dữ liệu, gửi đăng nhập. */
 (() => {
   // ===== Cấu hình =====
-  const NEXT_URL = '../index.html';        // trang chuyển tới sau khi đăng nhập thành công
+  const NEXT_URL = '../index.html';        // trang chuyển tới sau khi đăng nhập thành công (admin)
+  const STUDENT_URL = '../bo_phieu/student.html';   // giao diện riêng của tài khoản học sinh
   const THEME_KEY = 'theme';            // đổi cho khớp khóa mà js/components/theme.js đang dùng
   const LANG_KEY = 'sclass.lang';       // khóa của js/i18n/engine.js: đổi ngôn ngữ ở đây cũng áp dụng cho trang chủ
   
@@ -82,6 +83,11 @@
     await API.signIn(username, password);
   }
 
+  // Admin vào giao diện đầy đủ; học sinh chỉ vào trang bỏ phiếu
+  async function homeFor() {
+    try { const p = await API.me(); return p && p.role === 'student' ? STUDENT_URL : NEXT_URL; } catch (e) { return NEXT_URL; }
+  }
+
   function fail(msg, field) {
     $('err').textContent = msg;
     ['email', 'pass'].forEach(id => $(id).removeAttribute('aria-invalid'));
@@ -97,7 +103,7 @@
     $('submit').disabled = true; $('submit').textContent = t('busy');
     try {
       await authenticate(email, pass, $('remember').checked);
-      location.href = NEXT_URL;
+      location.href = await homeFor();
     } catch (err) {
       console.error('[login]', err);
       const broken = typeof API === 'undefined' || (typeof SB_ERROR !== 'undefined' && SB_ERROR);
@@ -107,6 +113,6 @@
     }
   });
   // Đã đăng nhập sẵn thì vào thẳng trang chủ
-  if (typeof API !== 'undefined') API.session().then(s => { if (s) location.replace(NEXT_URL); }).catch(() => {});
+  if (typeof API !== 'undefined') API.session().then(async s => { if (s) location.replace(await homeFor()); }).catch(() => {});
   applyLang();
 })();

@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bỏ phiếu · S Class</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="../css/base.css">
+  <style>
+    html{visibility:hidden}
+    .st-wrap{max-width:560px;margin:0 auto;min-height:calc(100dvh - 32px);display:flex;flex-direction:column;gap:14px}
+    .st-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .st-brand{display:flex;align-items:center;gap:10px;min-width:0}
+    .st-brand b{font-weight:500;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .st-tools{display:flex;align-items:center;gap:10px;flex:none}
+    .seg{display:inline-flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:var(--pn)}
+    .seg button{height:28px;min-width:36px;padding:0 8px;border:0;background:transparent;color:var(--mu);font-size:12px;font-weight:500}
+    .seg button[aria-pressed=true]{background:var(--acc);color:#fff}
+    .ghost{height:30px;padding:0 12px;border:1px solid var(--bd);border-radius:8px;background:var(--pn);color:var(--tx);font-size:12.5px}
+    .ghost:hover{background:var(--hv)}
+    .card{background:var(--pn);border:1px solid var(--bd);border-radius:12px;padding:20px 18px}
+    .who{color:var(--mu);font-size:12.5px}
+    .card h1{font-size:18px;font-weight:600;margin-bottom:2px;overflow-wrap:anywhere}
+    .rd{display:inline-block;margin:6px 0 4px;padding:2px 10px;border-radius:10px;background:var(--b-bg);color:var(--b-tx);font-size:12px;font-weight:500}
+    .hint{color:var(--mu);font-size:13px;margin:4px 0 14px}
+    .opts{display:grid;gap:8px}
+    .opt{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);cursor:pointer;font-size:14px;transition:border-color .15s,background .15s}
+    .opt:hover{border-color:var(--acc-t)}
+    .opt.sel{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--bg))}
+    .opt input{width:18px;height:18px;margin:0}
+    .opt span{overflow-wrap:anywhere}
+    .send{width:100%;height:44px;margin-top:14px;border:0;border-radius:10px;background:var(--acc);color:#fff;font-size:14px;font-weight:500}
+    .send:disabled{opacity:.5;cursor:not-allowed}
+    .done{text-align:center;padding:18px 0 6px}
+    .done .ok{width:44px;height:44px;margin:0 auto 10px;border-radius:50%;background:var(--g-bg);color:var(--g-tx);display:flex;align-items:center;justify-content:center}
+    .done h2{font-size:16px;font-weight:600;margin-bottom:4px}
+    .none{text-align:center;padding:26px 0 18px}
+    .none h2{font-size:16px;font-weight:600;margin-bottom:6px}
+    .prog{margin-top:16px;font-size:12.5px;color:var(--mu)}
+    .bar{height:6px;border-radius:3px;background:var(--hdr);overflow:hidden;margin-top:6px}
+    .bar i{display:block;height:100%;background:var(--acc);transition:width .3s}
+    .err{color:var(--err);font-size:12.5px;min-height:18px;margin-top:10px}
+    .tg{position:relative;width:48px;height:26px;padding:0;border:0;border-radius:13px;background:#5B9BD8;transition:background .4s}
+    .tg .k{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#F2C94C;transition:transform .4s,background .4s}
+    :root[data-theme=dark] .tg{background:#1B2338}:root[data-theme=dark] .tg .k{transform:translateX(22px);background:#CBD0DB}
+    dialog{border:1px solid var(--bd);border-radius:12px;background:var(--pn);color:var(--tx);padding:18px;width:calc(100% - 32px);max-width:380px}
+    dialog::backdrop{background:var(--scrim)}
+    dialog h2{font-size:16px;font-weight:600;margin-bottom:6px}
+    .dbtn{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+    .dbtn button{height:36px;padding:0 16px;border-radius:8px;border:1px solid var(--bd);background:transparent;font-size:13px}
+    .dbtn .go{border:0;background:var(--acc);color:#fff}
+  </style>
+</head>
+<body>
+<div class="st-wrap">
+  <header class="st-top">
+    <div class="st-brand">
+      <svg width="34" height="34" viewBox="0 0 40 40" style="flex:none" role="img" aria-label="Logo S Class"><rect x="2" y="2" width="36" height="36" rx="11" fill="#4338CA"/><path d="M26 15C26 11.5 23 10 20 10C16.5 10 14 12 14 15C14 18.5 18 19.5 20.5 20.3C24 21.4 26.5 22.8 26.5 26C26.5 29.3 23.5 31 20 31C16.5 31 14 29.3 13.5 26.5" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/><path d="M31 4.5L32.2 7.8L35.5 9L32.2 10.2L31 13.5L29.8 10.2L26.5 9L29.8 7.8Z" fill="#FBBF24"/></svg>
+      <b id="cls">S Class</b>
+    </div>
+    <div class="st-tools">
+      <span class="seg" id="langTg" role="group" aria-label="Ngôn ngữ / Language"><button type="button" data-lang="vi" aria-pressed="true">VI</button><button type="button" data-lang="en" aria-pressed="false">EN</button></span>
+      <button class="tg" id="tg" type="button" aria-pressed="false" data-aria="theme" aria-label="Đổi giao diện sáng hoặc tối"><span class="k"></span></button>
+      <button class="ghost" id="out" type="button" data-i18n="logout">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="card" id="main" aria-live="polite"></main>
+  <p class="who" id="who"></p>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlgT">
+  <h2 id="dlgT" data-i18n="confirmT">Xác nhận bỏ phiếu</h2>
+  <p id="dlgP"></p>
+  <div class="dbtn"><button type="button" id="dNo" data-i18n="back">Chọn lại</button><button type="button" class="go" id="dYes" data-i18n="confirm">Xác nhận</button></div>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="../js/data/supabase-config.js"></script>
+<script src="../js/data/api.js"></script>
+<script src="../js/data/vote-logic.js"></script>
+<script src="../js/data/vote-api.js"></script>
+<script>
+/* Giao diện học sinh: chỉ xem cuộc bỏ phiếu đang diễn ra và gửi một phiếu. Không có trang nào khác của lớp. */
+(() => {
+  const LOGIN = '../auth/login.html', ADMIN_HOME = '../index.html';
+  const THEME_KEY = 'theme', LANG_KEY = 'sclass.lang';
+  const T = {
+    vi: {
+      logout: 'Đăng xuất', confirmT: 'Xác nhận bỏ phiếu', back: 'Chọn lại', confirm: 'Xác nhận', theme: 'Đổi giao diện sáng hoặc tối',
+      loading: 'Đang tải...', noneT: 'Hiện chưa có cuộc bỏ phiếu nào', noneP: 'Trang tự cập nhật khi lớp mở bỏ phiếu. Bạn không cần tải lại.',
+      round: (n, r, fin) => 'Vòng ' + n + '/' + r + (fin ? ' · vòng cuối' : ''), mini: n => 'Vòng phụ (thuộc vòng ' + n + ')',
+      need: (k, fin, mini, tied) => mini ? 'Chọn ' + k + ' người trong ' + tied + ' người đồng điểm.' : fin ? 'Chọn 1 người thắng cuộc.' : 'Chọn ' + k + ' người đi tiếp.',
+      hint: 'Mỗi bạn có một phiếu cho mỗi vòng, chọn một ứng viên. Phiếu kín và không đổi được sau khi gửi.',
+      send: 'Gửi phiếu', sending: 'Đang gửi...', doneT: 'Đã ghi nhận phiếu của bạn', doneP: 'Vui lòng chờ kết quả hoặc vòng tiếp theo. Trang tự cập nhật.',
+      sure: n => 'Bạn bỏ phiếu cho ' + n + '? Phiếu không thể đổi sau khi gửi.',
+      prog: (d, t) => 'Đã có ' + d + '/' + t + ' bạn bỏ phiếu',
+      errSend: 'Không gửi được phiếu. Hãy thử lại.', errLoad: 'Không tải được dữ liệu. Đang thử lại...', errClosed: 'Vòng này vừa kết thúc. Đang cập nhật...',
+      who: n => 'Đăng nhập với tên ' + n, page: 'Bỏ phiếu · S Class'
+    },
+    en: {
+      logout: 'Log out', confirmT: 'Confirm your vote', back: 'Go back', confirm: 'Confirm', theme: 'Switch light or dark theme',
+      loading: 'Loading...', noneT: 'There is no vote right now', noneP: 'This page updates by itself when your class opens a vote. No need to reload.',
+      round: (n, r, fin) => 'Round ' + n + '/' + r + (fin ? ' · final round' : ''), mini: n => 'Tie-break round (part of round ' + n + ')',
+      need: (k, fin, mini, tied) => mini ? 'Choose ' + k + ' of the ' + tied + ' tied candidates.' : fin ? 'Choose 1 winner.' : 'Choose ' + k + ' to move on.',
+      hint: 'You have one vote per round: pick one candidate. Votes are secret and cannot be changed once sent.',
+      send: 'Submit vote', sending: 'Sending...', doneT: 'Your vote has been recorded', doneP: 'Please wait for the result or the next round. This page updates by itself.',
+      sure: n => 'Vote for ' + n + '? You cannot change it after sending.',
+      prog: (d, t) => d + ' of ' + t + ' have voted',
+      errSend: 'Could not send your vote. Please try again.', errLoad: 'Could not load data. Retrying...', errClosed: 'This round just ended. Updating...',
+      who: n => 'Signed in as ' + n, page: 'Voting · S Class'
+    }
+  };
+  const $ = id => document.getElementById(id);
+  const store = { get: k => { try { return localStorage.getItem(k) } catch (e) { return null } }, set: (k, v) => { try { localStorage.setItem(k, v) } catch (e) {} } };
+  let lang = store.get(LANG_KEY) === 'en' ? 'en' : 'vi';
+  const t = k => T[lang][k];
+  const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e };
+
+  /* ---------- Trạng thái ---------- */
+  let me = null, cur = null, voted = false, picked = null, prog = null, busy = false, err = '', stop = null;
+
+  /* ---------- Hiển thị ---------- */
+  function render() {
+    document.documentElement.lang = lang; document.title = t('page');
+    document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = t(e.dataset.i18n) });
+    document.querySelectorAll('[data-aria]').forEach(e => e.setAttribute('aria-label', t(e.dataset.aria)));
+    document.querySelectorAll('#langTg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === lang));
+    if (me) { $('cls').textContent = 'Lớp ' + me.className; $('who').textContent = t('who')(me.name) }
+    const m = $('main'); m.textContent = '';
+    if (!cur) { m.appendChild(el('p', 'mu', t('loading'))); return }
+    if (!cur.round) {
+      const d = el('div', 'none'); d.append(el('h2', '', t('noneT')), el('p', 'mu', t('noneP'))); m.appendChild(d); return;
+    }
+    const e = cur.election, r = cur.round, st = e.state || {};
+    const fin = st.idx === st.R - 1, mini = r.kind === 'mini';
+    const title = el('h1', '', e.title); m.appendChild(title);
+    m.appendChild(el('span', 'rd', mini ? t('mini')(st.idx + 1) : t('round')(st.idx + 1, st.R || e.rounds, fin)));
+    if (voted) {
+      const d = el('div', 'done'), ok = el('div', 'ok');
+      ok.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+      d.append(ok, el('h2', '', t('doneT')), el('p', 'mu', t('doneP'))); m.appendChild(d);
+    } else {
+      m.appendChild(el('p', 'hint', t('need')(r.need, fin, mini, r.candidates.length) + ' ' + t('hint')));
+      const box = el('div', 'opts'); box.setAttribute('role', 'radiogroup');
+      r.candidates.forEach(c => {
+        const l = el('label', 'opt' + (picked === c.id ? ' sel' : '')), i = el('input');
+        i.type = 'radio'; i.name = 'cand'; i.value = c.id; i.checked = picked === c.id;
+        i.onchange = () => { picked = c.id; box.querySelectorAll('.opt').forEach(x => x.classList.remove('sel')); l.classList.add('sel'); $('send').disabled = busy; };
+        l.append(i, el('span', '', c.name)); box.appendChild(l);
+      });
+      const b = el('button', 'send', busy ? t('sending') : t('send')); b.id = 'send'; b.type = 'button'; b.disabled = busy || picked === null;
+      b.onclick = ask;
+      m.append(box, b);
+    }
+    if (prog) {
+      const p = el('div', 'prog', t('prog')(prog.done, prog.total)), bar = el('div', 'bar'), i = el('i');
+      i.style.width = (prog.total ? Math.min(100, Math.round(prog.done / prog.total * 100)) : 0) + '%'; bar.appendChild(i); p.appendChild(bar); m.appendChild(p);
+    }
+    if (err) m.appendChild(el('p', 'err', err));
+  }
+
+  /* ---------- Gửi phiếu (hỏi lại một lần vì phiếu không đổi được) ---------- */
+  function ask() {
+    if (busy || picked === null) return;
+    const c = cur.round.candidates.find(x => x.id === picked); if (!c) return;
+    $('dlgP').textContent = t('sure')(c.name); $('dlg').showModal();
+  }
+  $('dNo').onclick = () => $('dlg').close();
+  $('dYes').onclick = async () => {
+    $('dlg').close();
+    if (busy || picked === null || !cur || !cur.round) return;
+    busy = true; err = ''; render();
+    try { await VoteAPI.cast(cur.round.id, picked); voted = true; picked = null; }
+    catch (e) {
+      if (e.message === 'already_voted') { voted = true; picked = null; }
+      else if (/round_closed/.test(e.message)) { err = t('errClosed'); await refresh(); }
+      else { console.error('[student] cast', e); err = t('errSend'); }
+    }
+    busy = false; try { if (cur && cur.round) prog = await VoteAPI.progress(cur.round.id) } catch (e) {}
+    render();
+  };
+
+  /* ---------- Cập nhật ---------- */
+  async function refresh() {
+    if (busy) return;
+    try {
+      const c = await VoteAPI.current(), was = cur && cur.round ? cur.round.id : null, now = c && c.round ? c.round.id : null;
+      if (was !== now) { picked = null; err = ''; voted = now ? await VoteAPI.voted(now) : false; }
+      cur = c || { election: null, round: null };
+      prog = now ? await VoteAPI.progress(now) : null;
+      if (err === t('errLoad')) err = '';
+    } catch (e) { console.error('[student] refresh', e); if (cur) err = t('errLoad'); }
+    render();
+  }
+
+  /* ---------- Giao diện sáng / tối, ngôn ngữ, đăng xuất ---------- */
+  function setTheme(v) { document.documentElement.dataset.theme = v; $('tg').setAttribute('aria-pressed', v === 'dark') }
+  const saved = store.get(THEME_KEY);
+  setTheme(saved === 'dark' || saved === 'light' ? saved : (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light'));
+  $('tg').onclick = () => { const v = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; setTheme(v); store.set(THEME_KEY, v) };
+  document.querySelectorAll('#langTg button').forEach(b => b.onclick = () => { lang = b.dataset.lang; store.set(LANG_KEY, lang); err = ''; render() });
+  $('out').onclick = () => { $('out').disabled = true; if (stop) stop(); API.signOut().catch(() => {}).then(() => location.replace(LOGIN)) };
+
+  /* ---------- Khởi động ---------- */
+  (async () => {
+    try {
+      me = await VoteAPI.me();
+      if (!me) { location.replace(LOGIN); return }
+      if (me.role === 'admin') { location.replace(ADMIN_HOME); return }   // admin dùng giao diện đầy đủ
+      document.documentElement.style.setProperty('--acc', me.color);
+      document.documentElement.style.visibility = 'visible';
+      render();
+      await refresh();
+      stop = VoteAPI.watch(refresh, 5000);
+    } catch (e) {
+      console.error('[student] init', e);
+      location.replace(LOGIN);
+    }
+  })();
+})();
+</script>
+</body>
+</html>

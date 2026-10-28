@@ -51,3 +51,9 @@ core/config → utils → icons → data/* → core/state → components/* → p
 - Trang Sự kiện: admin thấy nút sửa / xoá ở từng sự kiện, tin ghim và nhắc nhở (việc cần làm), và nút sửa ở khung "Trực nhật trong tuần" (đổi người, đổi tên / thêm / xoá nhiệm vụ, hoặc quay về phân công tự động). Tuần đã qua chỉ xem.
 - Thành viên thường không thấy các nút này; quyền ghi cũng được chặn ở máy chủ (RLS).
 - Dữ liệu lưu ở bảng `class_weeks`. **Chạy `sql/update-5.sql` một lần** trong Supabase > SQL Editor nếu bạn đã chạy `schema.sql` trước đây (cài mới thì `schema.sql` đã có sẵn). Chưa chạy thì chỉnh sửa vẫn hiện trên máy bạn nhưng sẽ mất khi tải lại trang.
+
+## Bỏ phiếu trực tuyến (admin theo dõi, học sinh bỏ phiếu)
+- **Học sinh** đăng nhập sẽ vào thẳng `bo_phieu/student.html`: chỉ xem cuộc bỏ phiếu đang diễn ra và gửi một phiếu mỗi vòng (phiếu kín, không đổi được). Các trang khác của lớp không mở được với tài khoản học sinh.
+- **Admin** dùng `bo_phieu/vote.html` (nhúng trong trang Bỏ phiếu): chọn ứng viên từ danh sách lớp, đặt số vòng, rồi bắt đầu. Trong lúc bỏ phiếu admin chỉ bỏ phiếu cho chính mình và theo dõi số người đã bỏ phiếu; không nhập số phiếu. Số phiếu do máy chủ đếm khi admin kết thúc vòng (`close_round`), rồi luật đi tiếp / vòng phụ khi đồng điểm áp dụng như trước.
+- Mã: `js/data/vote-logic.js` (luật vòng, không cần mạng), `js/data/vote-api.js` (Supabase).
+- Cơ sở dữ liệu: cài mới dùng `sql/schema.sql`; nếu đã cài trước đó, chạy thêm `sql/update-6.sql` một lần.
