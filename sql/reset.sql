@@ -7,4 +7,6 @@ drop function if exists my_class(), is_admin(), check_class_code(text, text),
   register_class_admin(text, text, text, text), register_student(text, text, text, uuid),
   list_class_students(text, text), save_group_set(text, text, jsonb),
   open_round(uuid, int, text, int, uuid[]), cast_ballot(uuid, uuid), round_progress(uuid), close_round(uuid),
-  set_display_name(text), admin_link_student(uuid, text, uuid), save_class_map(int, int, int, boolean, boolean, jsonb) cascade;
+  set_display_name(text), save_class_map(int, int, int, boolean, boolean, jsonb),
+  gen_class_code(), get_join_code(), rotate_join_code(), rotate_admin_code(),
+  round_vote_status(uuid), link_my_student(uuid) cascade;

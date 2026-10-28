@@ -106,6 +106,7 @@ var API = (function () {
     } else {      // lớp mới chưa có sơ đồ: bắt đầu từ bước thiết lập
       C.map = { rows: 4, cols: 5, spd: 2, ag: false, rnd: false, mode: 'setup', grid: [], saved: null };
     }
+    S.studentId = p.student_id || null; S.studentName = (p.student_id && ids.byId[p.student_id]) || '';   // tên của tôi trong danh sách lớp (null nếu chưa liên kết)
     S.name = p.full_name || p.username; S.username = p.username; S.role = p.role; S.realRole = p.role;   // realRole: vai trò thật từ tài khoản
     if (typeof syncDerived === 'function') syncDerived(C);   // làm khớp sơ đồ lớp, ứng viên... với danh sách học sinh mới
     return p;
@@ -152,6 +153,21 @@ var API = (function () {
     }
     return { added: added, skipped: skipped };
   }
+  /* ---------- Liên kết tài khoản với tên trong danh sách lớp ---------- */
+  async function unlinkedStudents() {   // tên chưa có tài khoản nào nhận: [{id, name}]
+    var st = ok(await SB.from('students').select('id, full_name').order('full_name'));
+    var taken = {}; ok(await SB.from('profiles').select('student_id')).forEach(function (p) { if (p.student_id) taken[p.student_id] = 1; });
+    return st.filter(function (s) { return !taken[s.id]; }).map(function (s) { return { id: s.id, name: s.full_name }; });
+  }
+  async function linkMyStudent(studentId) {
+    var r = await SB.rpc('link_my_student', { p_student_id: studentId });
+    if (r.error) throw new Error(/student_taken|duplicate|unique/.test(r.error.message) ? 'taken' : /already_linked/.test(r.error.message) ? 'already' : explain(r.error).message);
+  }
+
+  /* ---------- Mã mời vào lớp (chỉ admin) ---------- */
+  async function getJoinCode() { var r = await SB.rpc('get_join_code'); if (r.error) throw (/forbidden/.test(r.error.message) ? new Error('forbidden') : explain(r.error)); return r.data; }
+  async function rotateJoinCode() { var r = await SB.rpc('rotate_join_code'); if (r.error) throw (/forbidden/.test(r.error.message) ? new Error('forbidden') : explain(r.error)); return r.data; }
+  async function rotateAdminCode() { var r = await SB.rpc('rotate_admin_code'); if (r.error) throw (/forbidden/.test(r.error.message) ? new Error('forbidden') : explain(r.error)); return r.data; }
   async function removeStudent(name) {
     var id = ids.byName[name]; if (!id) return;
     var r = await SB.from('students').delete().eq('id', id).select('id');
@@ -193,23 +209,6 @@ var API = (function () {
     ok(await SB.from('notifications').insert({ class_id: p.class_id, text: text, page: page || 'event', icon: icon || 'calendar-event', created_by: p.id }));
   }
 
-  /* ---------- Bản tin tuần: sự kiện, tin ghim, nhắc nhở, trực nhật (mỗi tuần một dòng JSON) ---------- */
-  async function loadWeeks() {   // -> {tuần: {pins, rem, ev, duty?}}
-    var rows = ok(await SB.from('class_weeks').select('week, data'));
-    var out = {}; rows.forEach(function (r) { out[r.week] = r.data; });
-    return out;
-  }
-  async function saveWeek(week, data) {   // chỉ admin (RLS); người khác nhận 0 dòng -> 'forbidden'
-    var p = await me();
-    var r = await SB.from('class_weeks').upsert({ class_id: p.class_id, week: week, data: data, updated_by: p.id, updated_at: new Date().toISOString() }).select('week');
-    if (r.error) throw explain(r.error);
-    if (!r.data.length) throw new Error('forbidden');
-  }
-  function onWeeks(cb) {   // cb(tuần, dữ liệu) khi admin khác sửa
-    return SB.channel('weeks').on('postgres_changes', { event: '*', schema: 'public', table: 'class_weeks' },
-      function (e) { if (e.new && e.new.week != null) cb(e.new.week, e.new.data); }).subscribe();
-  }
-
   /* ---------- Nhóm học tập (mỗi môn một bộ) ---------- */
   async function saveGroups(subject, method, groups) {   // groups: [{no, color, members:[tên học sinh]}]
     var payload = groups.map(function (g) { return { no: g.no, color: g.color, members: g.members.map(idOf).filter(Boolean) }; });
@@ -233,14 +232,21 @@ var API = (function () {
   async function openRound(electionId, no, kind, need, names) {
     return ok(await SB.rpc('open_round', { p_election: electionId, p_round_no: no, p_kind: kind, p_need: need, p_candidates: names.map(idOf) }));
   }
-  async function openRounds() {   // các vòng đang mở mà học sinh có thể bỏ phiếu, kèm ứng viên
+  async function roundStatus(roundId) { return ok(await SB.rpc('round_vote_status', { p_round: roundId })); }
+  async function openRounds() {   // các vòng đang mở, kèm ứng viên và việc TÔI có được bỏ phiếu không (canVote, reason)
     var rows = ok(await SB.from('rounds').select('id, round_no, kind, need, elections(title), round_candidates(student_id)').eq('status', 'open'));
-    return rows.map(function (r) { return { id: r.id, no: r.round_no, kind: r.kind, need: r.need, title: r.elections.title,
-      candidates: r.round_candidates.map(function (c) { return { id: c.student_id, name: nameOf(c.student_id) }; }) }; });
+    return Promise.all(rows.map(async function (r) {
+      var reason = await roundStatus(r.id);   // ok | voted | candidate | not_linked | closed
+      return { id: r.id, no: r.round_no, kind: r.kind, need: r.need, title: r.elections.title, reason: reason, canVote: reason === 'ok',
+        candidates: r.round_candidates.map(function (c) { return { id: c.student_id, name: nameOf(c.student_id) }; }) };
+    }));
   }
   async function castBallot(roundId, candidateId) {
     var r = await SB.rpc('cast_ballot', { p_round: roundId, p_candidate: candidateId });
-    if (r.error) throw new Error(/ballot_receipts_pkey|duplicate/i.test(r.error.message) ? 'already_voted' : r.error.message);
+    if (r.error) {
+      var m = r.error.message;
+      throw new Error(/ballot_receipts_pkey|duplicate/i.test(m) ? 'already_voted' : /candidate_cannot_vote/.test(m) ? 'candidate' : /not_linked/.test(m) ? 'unlinked' : /round_closed/.test(m) ? 'closed' : m);
+    }
   }
   async function progress(roundId) { return ok(await SB.rpc('round_progress', { p_round: roundId })); }
   async function closeRound(roundId) {   // -> [{name, votes}] đã sắp xếp; sau đó ứng dụng áp dụng luật đồng điểm như hiện nay
@@ -255,8 +261,8 @@ var API = (function () {
     return SB.channel('rounds').on('postgres_changes', { event: '*', schema: 'public', table: 'rounds' }, cb).subscribe();
   }
 
-  return { addStudents: addStudents, saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
-    loadClass: loadClass, idOf: idOf, nameOf: nameOf, loadNotifs: loadNotifs, onNotif: onNotif, markRead: markRead, notify: notify, loadWeeks: loadWeeks, saveWeek: saveWeek, onWeeks: onWeeks,
+  return { unlinkedStudents: unlinkedStudents, linkMyStudent: linkMyStudent, roundStatus: roundStatus, getJoinCode: getJoinCode, rotateJoinCode: rotateJoinCode, rotateAdminCode: rotateAdminCode, addStudents: addStudents, saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
+    loadClass: loadClass, idOf: idOf, nameOf: nameOf, loadNotifs: loadNotifs, onNotif: onNotif, markRead: markRead, notify: notify,
     saveGroups: saveGroups, loadGroups: loadGroups, createElection: createElection, openRound: openRound, openRounds: openRounds,
     castBallot: castBallot, progress: progress, closeRound: closeRound, saveOutcomes: saveOutcomes, onRounds: onRounds };
 })();

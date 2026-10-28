@@ -81,7 +81,7 @@ create table notification_reads (
 create table group_sets (
   id uuid primary key default gen_random_uuid(),
   class_id uuid not null references classes(id) on delete cascade,
-  subject text not null check (subject in ('To','Va','An','Su')),   -- mã môn: To=Toán, Va=Ngữ Văn, An=Tiếng Anh, Su=Lịch sử
+  subject text not null,
   method text not null check (method in ('lights','ball','manual')),
   is_current boolean not null default true,
   created_by uuid references profiles(id) on delete set null,
@@ -109,11 +109,9 @@ create table elections (
   advance int[] not null default '{}',             -- số người đi tiếp sau mỗi vòng (trừ vòng cuối)
   status text not null default 'open' check (status in ('open','closed')),
   deadline timestamptz,
-  state jsonb not null default '{}'::jsonb,         -- ứng viên, luật, vòng hiện tại, lịch sử kết quả (admin ghi, cả lớp đọc; không chứa phiếu từng người)
   created_by uuid references profiles(id) on delete set null,
   created_at timestamptz not null default now()
 );
-create unique index elections_one_open on elections(class_id) where status = 'open';   -- mỗi lớp một cuộc bầu đang mở
 create table rounds (
   id uuid primary key default gen_random_uuid(),
   election_id uuid not null references elections(id) on delete cascade,
@@ -206,7 +204,6 @@ language plpgsql security definer set search_path = public, extensions as $$
 declare cid uuid := my_class(); sid uuid; gid uuid; g jsonb;
 begin
   if not is_admin() then raise exception 'forbidden'; end if;
-  if p_subject not in ('To','Va','An','Su') then raise exception 'bad_subject'; end if;
   update group_sets set is_current = false where class_id = cid and subject = p_subject and is_current;
   insert into group_sets(class_id, subject, method, created_by) values (cid, p_subject, p_method, auth.uid()) returning id into sid;
   for g in select * from jsonb_array_elements(p_groups) loop
@@ -230,18 +227,56 @@ begin
   return rid;
 end $$;
 
-create function cast_ballot(p_round uuid, p_candidate uuid) returns void
+-- Bỏ phiếu: ứng viên của chính vòng này KHÔNG được bỏ phiếu; tài khoản chưa liên kết với tên trong danh sách lớp cũng không được
+-- (vì không biết họ có phải ứng viên hay không). Ứng viên đã bị loại ở vòng sau thì bỏ phiếu được ở các vòng mà họ không còn là ứng viên.
+create or replace function cast_ballot(p_round uuid, p_candidate uuid) returns void
 language plpgsql security definer set search_path = public, extensions as $$
-declare r rounds; e elections;
+declare r rounds; e elections; sid uuid;
 begin
   select * into r from rounds where id = p_round;
   if not found then raise exception 'no_round'; end if;
   select * into e from elections where id = r.election_id;
   if e.class_id is distinct from my_class() then raise exception 'forbidden'; end if;
   if r.status <> 'open' then raise exception 'round_closed'; end if;
+  select student_id into sid from profiles where id = auth.uid();
+  if sid is null then raise exception 'not_linked'; end if;
+  if exists (select 1 from round_candidates where round_id = p_round and student_id = sid) then
+    raise exception 'candidate_cannot_vote';
+  end if;
   insert into ballot_receipts(round_id, voter_id) values (p_round, auth.uid());   -- trùng khóa = đã bỏ phiếu rồi
   insert into ballots(round_id, student_id) values (p_round, p_candidate);
 end $$;
+
+-- Trạng thái của tôi trong một vòng, để giao diện báo lý do: ok | voted | candidate | not_linked | closed | forbidden | no_round
+create or replace function round_vote_status(p_round uuid) returns text
+language plpgsql stable security definer set search_path = public, extensions as $$
+declare r rounds; e elections; sid uuid;
+begin
+  select * into r from rounds where id = p_round;
+  if not found then return 'no_round'; end if;
+  select * into e from elections where id = r.election_id;
+  if e.class_id is distinct from my_class() then return 'forbidden'; end if;
+  if r.status <> 'open' then return 'closed'; end if;
+  select student_id into sid from profiles where id = auth.uid();
+  if sid is null then return 'not_linked'; end if;
+  if exists (select 1 from round_candidates where round_id = p_round and student_id = sid) then return 'candidate'; end if;
+  if exists (select 1 from ballot_receipts where round_id = p_round and voter_id = auth.uid()) then return 'voted'; end if;
+  return 'ok';
+end $$;
+
+-- Liên kết tài khoản (thường là admin, vì học sinh đã liên kết khi đăng ký) với đúng tên trong danh sách lớp. Chỉ một lần.
+create or replace function link_my_student(p_student_id uuid) returns void
+language plpgsql security definer set search_path = public, extensions as $$
+declare uid uuid := auth.uid(); cid uuid := my_class();
+begin
+  if uid is null or cid is null then raise exception 'not_authenticated'; end if;
+  if exists (select 1 from profiles where id = uid and student_id is not null) then raise exception 'already_linked'; end if;
+  if not exists (select 1 from students where id = p_student_id and class_id = cid) then raise exception 'bad_student'; end if;
+  if exists (select 1 from profiles where student_id = p_student_id) then raise exception 'student_taken'; end if;
+  update profiles set student_id = p_student_id where id = uid;
+end $$;
+revoke execute on function round_vote_status(uuid), link_my_student(uuid) from public, anon;
+grant execute on function round_vote_status(uuid), link_my_student(uuid), cast_ballot(uuid, uuid) to authenticated;
 
 -- Số người đã bỏ phiếu (không tiết lộ ai bầu cho ai)
 create function round_progress(p_round uuid) returns int
@@ -320,24 +355,57 @@ end $$;
 revoke execute on function save_class_map(int, int, int, boolean, boolean, jsonb) from public, anon;
 grant execute on function save_class_map(int, int, int, boolean, boolean, jsonb) to authenticated;
 
--- ---------- Admin tạo tài khoản học sinh hàng loạt (xem sql/update-7.sql) ----------
-create or replace function admin_link_student(p_uid uuid, p_username text, p_student_id uuid) returns void
+-- ---------- Mã mời vào lớp: xem mã học sinh, tạo mã mới ----------
+-- Mã học sinh là mã MỜI (để chia sẻ) nên lưu thêm bản đọc được, chỉ admin lấy được qua hàm bên dưới.
+-- Mã quản trị chỉ lưu dạng băm: không xem lại được, chỉ tạo mã mới (hiện đúng một lần).
+alter table class_secrets add column if not exists join_code_plain text;
+
+create or replace function gen_class_code() returns text
+language plpgsql volatile set search_path = public, extensions as $$
+declare chars constant text := 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';   -- bỏ I, L, O, 0, 1 cho dễ đọc
+        res text := ''; i int; b int;
+begin
+  for i in 1..12 loop
+    b := get_byte(gen_random_bytes(1), 0);
+    while b >= 248 loop b := get_byte(gen_random_bytes(1), 0); end loop;   -- 248 = 31 x 8, tránh lệch xác suất
+    res := res || substr(chars, (b % 31) + 1, 1);
+    if i in (4, 8) then res := res || '-'; end if;
+  end loop;
+  return res;                                                              -- dạng XXXX-XXXX-XXXX
+end $$;
+
+create or replace function get_join_code() returns text
 language plpgsql security definer set search_path = public, extensions as $$
-declare cid uuid := my_class(); uname text := lower(trim(p_username));
+declare code text;
 begin
   if not is_admin() then raise exception 'forbidden'; end if;
-  if uname !~ '^[a-z0-9._-]{3,30}$' then raise exception 'bad_username'; end if;
-  -- chỉ gắn tài khoản vừa tạo (trong 10 phút) và đúng tên đăng nhập, để không gắn nhầm tài khoản người khác
-  if not exists (select 1 from auth.users where id = p_uid and lower(split_part(email, '@', 1)) = uname
-                   and created_at > now() - interval '10 minutes') then raise exception 'no_user'; end if;
-  if exists (select 1 from profiles where id = p_uid) then raise exception 'user_has_profile'; end if;
-  if not exists (select 1 from students where id = p_student_id and class_id = cid) then raise exception 'bad_student'; end if;
-  if exists (select 1 from profiles where student_id = p_student_id) then raise exception 'student_taken'; end if;
-  insert into profiles(id, username, full_name, role, class_id, student_id)
-    select p_uid, uname, s.full_name, 'student', cid, s.id from students s where s.id = p_student_id;
+  select join_code_plain into code from class_secrets where class_id = my_class();
+  return code;                                                             -- null nếu chưa từng tạo mã xem được
 end $$;
-revoke execute on function admin_link_student(uuid, text, uuid) from public, anon;
-grant execute on function admin_link_student(uuid, text, uuid) to authenticated;
+
+create or replace function rotate_join_code() returns text
+language plpgsql security definer set search_path = public, extensions as $$
+declare code text := gen_class_code();
+begin
+  if not is_admin() then raise exception 'forbidden'; end if;
+  update class_secrets set join_code_hash = crypt(code, gen_salt('bf')), join_code_plain = code where class_id = my_class();
+  if not found then raise exception 'no_secrets'; end if;
+  return code;
+end $$;
+
+create or replace function rotate_admin_code() returns text
+language plpgsql security definer set search_path = public, extensions as $$
+declare code text := gen_class_code();
+begin
+  if not is_admin() then raise exception 'forbidden'; end if;
+  update class_secrets set admin_code_hash = crypt(code, gen_salt('bf')) where class_id = my_class();
+  if not found then raise exception 'no_secrets'; end if;
+  return code;
+end $$;
+
+revoke execute on function gen_class_code() from public, anon, authenticated;
+revoke execute on function get_join_code(), rotate_join_code(), rotate_admin_code() from public, anon;
+grant execute on function get_join_code(), rotate_join_code(), rotate_admin_code() to authenticated;
 
 -- ---------- Row Level Security ----------
 alter table classes enable row level security;
@@ -355,7 +423,7 @@ alter table study_group_members enable row level security;
 alter table elections enable row level security;
 alter table rounds enable row level security;
 alter table round_candidates enable row level security;
-alter table ballot_receipts enable row level security;    -- chỉ cast_ballot ghi được; mỗi người chỉ đọc được dòng của chính mình (receipts_own)
+alter table ballot_receipts enable row level security;    -- không có chính sách: chỉ cast_ballot ghi được
 alter table ballots enable row level security;            -- không có chính sách: không ai đọc được từng phiếu
 
 create policy classes_read on classes for select using (id = my_class());
@@ -394,7 +462,6 @@ create policy elections_admin on elections for all using (class_id = my_class() 
 create policy rounds_read on rounds for select using (exists (select 1 from elections e where e.id = election_id and e.class_id = my_class()));
 create policy rcands_read on round_candidates for select using (exists (
   select 1 from rounds r join elections e on e.id = r.election_id where r.id = round_id and e.class_id = my_class()));
-create policy receipts_own on ballot_receipts for select using (voter_id = auth.uid());   -- chỉ đọc dòng "đã bỏ phiếu" của chính mình
 create policy rcands_admin_update on round_candidates for update using (is_admin() and exists (
   select 1 from rounds r join elections e on e.id = r.election_id where r.id = round_id and e.class_id = my_class()));
 
@@ -412,30 +479,13 @@ grant execute on function close_round(uuid) to authenticated;
 grant execute on function my_class() to authenticated;
 grant execute on function is_admin() to authenticated;
 
--- ---------- Bản tin tuần: sự kiện, tin ghim, nhắc nhở, trực nhật (admin sửa được) ----------
--- Mỗi lớp, mỗi tuần một dòng. data = {"pins":[], "rem":[], "ev":[], "duty":{"tasks":[], "cells":{}}}
-create table if not exists class_weeks (
-  class_id uuid not null references classes(id) on delete cascade,
-  week int not null,
-  data jsonb not null default '{}'::jsonb,
-  updated_by uuid references profiles(id) on delete set null,
-  updated_at timestamptz not null default now(),
-  primary key (class_id, week)
-);
-alter table class_weeks enable row level security;
-drop policy if exists class_weeks_read on class_weeks;
-drop policy if exists class_weeks_admin on class_weeks;
-create policy class_weeks_read on class_weeks for select using (class_id = my_class());
-create policy class_weeks_admin on class_weeks for all
-  using (class_id = my_class() and is_admin()) with check (class_id = my_class() and is_admin());
-
 -- ---------- Cập nhật tức thời (Realtime) ----------
-alter publication supabase_realtime add table notifications, rounds, elections, class_weeks;
+alter publication supabase_realtime add table notifications, rounds, elections;
 
 -- ---------- Ví dụ tạo lớp đầu tiên (chạy tay trong SQL Editor, đổi mã cho riêng bạn) ----------
 -- with c as (insert into classes(name, school) values ('10A5', 'THPT Chuyên Lê Quý Đôn') returning id)
 -- insert into class_secrets(class_id, admin_code_hash, join_code_hash)
 --   select id, crypt('MA-QUAN-TRI-DAI-VA-NGAU-NHIEN', gen_salt('bf')), crypt('MA-HOC-SINH-KHAC', gen_salt('bf')) from c;
 
--- ---------- Kiểm tra: danh sách bảng vừa tạo (phải có đúng 19 dòng trong bảng kết quả) ----------
+-- ---------- Kiểm tra: danh sách bảng vừa tạo (phải có đúng 18 dòng trong bảng kết quả) ----------
 select tablename from pg_tables where schemaname = 'public' order by tablename;
