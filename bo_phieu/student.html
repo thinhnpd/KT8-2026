@@ -48,6 +48,8 @@
     dialog{border:1px solid var(--bd);border-radius:12px;background:var(--pn);color:var(--tx);padding:18px;width:calc(100% - 32px);max-width:380px}
     dialog::backdrop{background:var(--scrim)}
     dialog h2{font-size:16px;font-weight:600;margin-bottom:6px}
+    .pl{display:block;margin:10px 0 4px;font-size:12px;color:var(--mu)}
+    .pi{width:100%;height:40px;padding:0 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:14px}
     .dbtn{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
     .dbtn button{height:36px;padding:0 16px;border-radius:8px;border:1px solid var(--bd);background:transparent;font-size:13px}
     .dbtn .go{border:0;background:var(--acc);color:#fff}
@@ -63,11 +65,13 @@
     <div class="st-tools">
       <span class="seg" id="langTg" role="group" aria-label="Ngôn ngữ / Language"><button type="button" data-lang="vi" aria-pressed="true">VI</button><button type="button" data-lang="en" aria-pressed="false">EN</button></span>
       <button class="tg" id="tg" type="button" aria-pressed="false" data-aria="theme" aria-label="Đổi giao diện sáng hoặc tối"><span class="k"></span></button>
+      <button class="ghost" id="pw" type="button" data-i18n="pwBtn">Đổi mật khẩu</button>
       <button class="ghost" id="out" type="button" data-i18n="logout">Đăng xuất</button>
     </div>
   </header>
 
   <main class="card" id="main" aria-live="polite"></main>
+  <p class="who" id="flash" role="status" style="color:var(--g-tx)"></p>
   <p class="who" id="who"></p>
 </div>
 
@@ -75,6 +79,17 @@
   <h2 id="dlgT" data-i18n="confirmT">Xác nhận bỏ phiếu</h2>
   <p id="dlgP"></p>
   <div class="dbtn"><button type="button" id="dNo" data-i18n="back">Chọn lại</button><button type="button" class="go" id="dYes" data-i18n="confirm">Xác nhận</button></div>
+</dialog>
+
+<dialog id="pwDlg" aria-labelledby="pwT">
+  <h2 id="pwT" data-i18n="pwBtn">Đổi mật khẩu</h2>
+  <form id="pwForm" novalidate>
+    <label class="pl" for="pwOld" data-i18n="pwOld">Mật khẩu hiện tại</label><input class="pi" type="password" id="pwOld" autocomplete="current-password">
+    <label class="pl" for="pwNew" data-i18n="pwNew">Mật khẩu mới (ít nhất 8 ký tự)</label><input class="pi" type="password" id="pwNew" autocomplete="new-password">
+    <label class="pl" for="pwNew2" data-i18n="pwNew2">Nhập lại mật khẩu mới</label><input class="pi" type="password" id="pwNew2" autocomplete="new-password">
+    <p class="err" id="pwErr" role="alert"></p>
+    <div class="dbtn"><button type="button" id="pwCancel" data-i18n="cancel">Huỷ</button><button type="submit" class="go" id="pwOk" data-i18n="save">Lưu</button></div>
+  </form>
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
@@ -89,7 +104,9 @@
   const THEME_KEY = 'theme', LANG_KEY = 'sclass.lang';
   const T = {
     vi: {
-      logout: 'Đăng xuất', confirmT: 'Xác nhận bỏ phiếu', back: 'Chọn lại', confirm: 'Xác nhận', theme: 'Đổi giao diện sáng hoặc tối',
+      logout: 'Đăng xuất', pwBtn: 'Đổi mật khẩu', pwOld: 'Mật khẩu hiện tại', pwNew: 'Mật khẩu mới (ít nhất 8 ký tự)', pwNew2: 'Nhập lại mật khẩu mới', cancel: 'Huỷ', save: 'Lưu',
+      pwEmpty: 'Nhập mật khẩu hiện tại.', pwShort: 'Mật khẩu mới cần ít nhất 8 ký tự.', pwMismatch: 'Hai mật khẩu mới chưa khớp.', pwWrong: 'Mật khẩu hiện tại không đúng.', pwSame: 'Mật khẩu mới phải khác mật khẩu hiện tại.', pwFail: 'Không đổi được mật khẩu. Hãy thử lại.', pwDone: 'Đã đổi mật khẩu',
+      confirmT: 'Xác nhận bỏ phiếu', back: 'Chọn lại', confirm: 'Xác nhận', theme: 'Đổi giao diện sáng hoặc tối',
       loading: 'Đang tải...', noneT: 'Hiện chưa có cuộc bỏ phiếu nào', noneP: 'Trang tự cập nhật khi lớp mở bỏ phiếu. Bạn không cần tải lại.',
       round: (n, r, fin) => 'Vòng ' + n + '/' + r + (fin ? ' · vòng cuối' : ''), mini: n => 'Vòng phụ (thuộc vòng ' + n + ')',
       need: (k, fin, mini, tied) => mini ? 'Chọn ' + k + ' người trong ' + tied + ' người đồng điểm.' : fin ? 'Chọn 1 người thắng cuộc.' : 'Chọn ' + k + ' người đi tiếp.',
@@ -101,7 +118,9 @@
       who: n => 'Đăng nhập với tên ' + n, page: 'Bỏ phiếu · S Class'
     },
     en: {
-      logout: 'Log out', confirmT: 'Confirm your vote', back: 'Go back', confirm: 'Confirm', theme: 'Switch light or dark theme',
+      logout: 'Log out', pwBtn: 'Change password', pwOld: 'Current password', pwNew: 'New password (at least 8 characters)', pwNew2: 'Repeat new password', cancel: 'Cancel', save: 'Save',
+      pwEmpty: 'Enter the current password.', pwShort: 'The new password needs at least 8 characters.', pwMismatch: 'The two new passwords do not match.', pwWrong: 'The current password is incorrect.', pwSame: 'The new password must be different from the current one.', pwFail: 'Could not change the password. Please try again.', pwDone: 'Password changed',
+      confirmT: 'Confirm your vote', back: 'Go back', confirm: 'Confirm', theme: 'Switch light or dark theme',
       loading: 'Loading...', noneT: 'There is no vote right now', noneP: 'This page updates by itself when your class opens a vote. No need to reload.',
       round: (n, r, fin) => 'Round ' + n + '/' + r + (fin ? ' · final round' : ''), mini: n => 'Tie-break round (part of round ' + n + ')',
       need: (k, fin, mini, tied) => mini ? 'Choose ' + k + ' of the ' + tied + ' tied candidates.' : fin ? 'Choose 1 winner.' : 'Choose ' + k + ' to move on.',
@@ -202,6 +221,19 @@
   setTheme(saved === 'dark' || saved === 'light' ? saved : (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light'));
   $('tg').onclick = () => { const v = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; setTheme(v); store.set(THEME_KEY, v) };
   document.querySelectorAll('#langTg button').forEach(b => b.onclick = () => { lang = b.dataset.lang; store.set(LANG_KEY, lang); err = ''; render() });
+  $('pw').onclick = () => { $('pwForm').reset(); $('pwErr').textContent = ''; $('pwDlg').showModal(); $('pwOld').focus() };
+  $('pwCancel').onclick = () => $('pwDlg').close();
+  $('pwForm').onsubmit = async e => {
+    e.preventDefault();
+    const o = $('pwOld').value, n1 = $('pwNew').value, n2 = $('pwNew2').value, er = $('pwErr');
+    if (!o) { er.textContent = t('pwEmpty'); return }
+    if (n1.length < 8) { er.textContent = t('pwShort'); return }
+    if (n1 !== n2) { er.textContent = t('pwMismatch'); return }
+    er.textContent = ''; $('pwOk').disabled = true;
+    try { await API.changePassword(o, n1); $('pwDlg').close(); err = ''; render(); const f = $('flash'); f.textContent = t('pwDone'); setTimeout(() => { f.textContent = '' }, 4000); }
+    catch (x) { er.textContent = x.message === 'wrong_password' ? t('pwWrong') : x.message === 'same_password' ? t('pwSame') : t('pwFail'); }
+    $('pwOk').disabled = false;
+  };
   $('out').onclick = () => { $('out').disabled = true; if (stop) stop(); API.signOut().catch(() => {}).then(() => location.replace(LOGIN)) };
 
   /* ---------- Khởi động ---------- */

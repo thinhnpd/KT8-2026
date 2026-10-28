@@ -24,6 +24,7 @@ function vSettings(){
     (a?'<form id="stForm" class="fg" style="margin-top:6px" novalidate><div><label for="stNew">Thêm học sinh (mỗi dòng một học sinh)</label><textarea id="stNew" rows="5" placeholder="Mỗi dòng một họ và tên, có thể dán cả danh sách" autocomplete="off" spellcheck="false"></textarea></div><div class="note" id="stSum"></div><div><button class="btn" type="submit">'+ic('plus',15)+'Thêm vào lớp</button></div></form><div class="err" id="stErr"'+(S.stErr?'':' hidden')+'>'+esc(S.stErr)+'</div>':'')+
     '<div class="stl"><table><thead><tr><th>STT</th><th>Họ và tên</th>'+(a?'<th></th>':'')+'</tr></thead><tbody>'+c.students.map(function(s,i){return '<tr><td class="rn">'+(i+1)+'</td><td>'+esc(s)+'</td>'+(a?'<td style="width:34px;text-align:center"><button class="ic-btn" data-act="stDel" data-i="'+i+'" aria-label="Xoá '+esc(s)+'">'+ic('trash',15)+'</button></td>':'')+'</tr>'}).join('')+'</tbody></table></div></div></section>';
 
+  if(a){h+=acctSection();setTimeout(loadAcct,0)}   /* admin: tạo tài khoản học sinh hàng loạt */
   h+='<section class="card"><h2>Chuyển tài khoản</h2><p class="mu">Đăng xuất để đăng nhập hoặc đăng ký tài khoản khác.</p><div class="frow" style="align-items:center;flex-wrap:wrap"><button class="btn gh" data-act="logout">'+ic('log-out',15)+'Đăng xuất</button></div></section>';
   return h;
 }

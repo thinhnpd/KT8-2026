@@ -10,6 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
   <script src="js/data/supabase-config.js"></script>
   <script src="js/data/api.js"></script>
+  <script src="js/data/account-logic.js"></script>
+  <script src="js/data/accounts-api.js"></script>
   <script>
     API.session().then(function (s) {
       if (!s) { location.replace('auth/login.html'); return; }
@@ -117,6 +119,7 @@
 <script src="js/pages/vote.js"></script>
 <script src="js/pages/feedback.js"></script>
 <script src="js/pages/settings.js"></script>
+<script src="js/pages/accounts.js"></script>
 <script src="js/pages/chia-nhom.js"></script>
 <script src="js/pages/vote-embed.js"></script>
 <script src="js/core/router.js"></script>

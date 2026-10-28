@@ -6,3 +6,8 @@
 .stl{max-height:300px;overflow:auto;border:1px solid var(--bd);border-radius:6px;margin-top:8px}
 .stl table{border:0}
 .stl th{position:sticky;top:0}
+.acct-n{display:flex;gap:8px;flex-wrap:wrap}
+.acct-tbl{max-height:320px}
+.acct-tbl input[type=text]{width:100%;min-width:110px;height:30px;padding:0 8px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx)}
+.acct-pw{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.3px;user-select:all}
+.pbar2{height:6px;border-radius:3px;background:var(--hdr);overflow:hidden}.pbar2 i{display:block;height:100%;background:var(--acc);transition:width .3s}

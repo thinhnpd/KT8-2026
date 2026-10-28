@@ -30,7 +30,22 @@ I18N.add('en',{
   'Không lưu được, vui lòng thử lại.':'Could not save; please try again.','Không lưu được logo, vui lòng thử lại.':'Could not save the logo; please try again.',
   'Chỉ admin mới được thay đổi.':'Only admins can change this.','Tên lớp này đã được dùng.':'This class name is already in use.',
   'Tên này đã có trong danh sách.':'This name is already in the list.',
-  'Đăng xuất để đăng nhập hoặc đăng ký tài khoản khác.':'Sign out to log in or register with another account.'
+  'Đăng xuất để đăng nhập hoặc đăng ký tài khoản khác.':'Sign out to log in or register with another account.',
+  /* tài khoản học sinh hàng loạt */
+  'Tài khoản học sinh':'Student accounts',
+  'Tạo tài khoản đăng nhập cho cả lớp. Học sinh dùng giao diện riêng chỉ để xem và bỏ phiếu.':'Create login accounts for the whole class. Students use a separate interface only to view and cast votes.',
+  'Đang tải...':'Loading...','Tạo tài khoản hàng loạt':'Create accounts in bulk',
+  'Mọi học sinh (không phải admin) đều đã có tài khoản.':'Every student (non-admin) already has an account.',
+  'Không tải được danh sách tài khoản. Hãy tải lại trang.':'Could not load the account list. Please reload the page.',
+  'Tên đăng nhập':'Username','Họ và tên':'Full name','Mật khẩu':'Password',
+  'Mật khẩu ngẫu nhiên (8 ký tự) được tạo khi bấm Tạo và chỉ hiện một lần. Hãy tải file CSV để phát cho học sinh; học sinh đổi mật khẩu sau khi đăng nhập.':'Random passwords (8 characters) are generated when you press Create and are shown only once. Download the CSV file to hand them out; students change their password after logging in.',
+  'Tải file CSV':'Download CSV file','Đóng':'Close','Dừng':'Stop','Đang dừng...':'Stopping...','Đang tạo...':'Creating...',
+  'Chưa tải CSV. Bấm lần nữa để đóng':'CSV not downloaded. Press again to close',
+  'Mật khẩu chỉ hiện ở đây. Tải file CSV trước khi đóng.':'Passwords are only shown here. Download the CSV file before closing.',
+  'Chờ':'Waiting','Đã tạo':'Created','Lỗi':'Error','Bỏ qua':'Skipped',
+  'Tên đăng nhập đã có người dùng':'Username already in use','Bị giới hạn số lần đăng ký của Supabase':'Supabase sign-up rate limit reached','Mật khẩu bị từ chối':'Password rejected',
+  'Đăng ký đang bị tắt trong Supabase':'Sign-ups are turned off in Supabase','Mất kết nối':'Connection lost',
+  'Đã tạo tài khoản nhưng chưa gắn được vào học sinh':'Account created but could not be linked to the student','Lỗi không xác định':'Unknown error'
 },[
   [/^Sẽ thêm (\d+) học sinh$/,function(n){return 'Will add '+(+n===1?'1 student':n+' students')}],
   [/^bỏ qua (\d+) dòng đã có hoặc trùng$/,function(n){return 'skipping '+n+(+n===1?' line that is':' lines that are')+' already in the list or duplicated'}],
@@ -38,5 +53,19 @@ I18N.add('en',{
   [/^Đã bỏ qua (\d+) tên đã có: (.+)$/,function(n,l){return 'Skipped '+n+(+n===1?' name':' names')+' already in the list: '+l}],
   [/^Có tên dài quá 80 ký tự: (.+)$/,function(n){return 'A name is longer than 80 characters: '+n}],
   [/^Danh sách lớp \((\d+) học sinh\)$/,function(n){return 'Class list ('+(+n===1?'1 student':n+' students')+')'}],
-  [/^Màu giao diện (#[0-9A-Fa-f]{3,8}), lấy tự động từ logo$/,function(c){return 'Theme color '+c+', picked automatically from the logo'}]
+  [/^Màu giao diện (#[0-9A-Fa-f]{3,8}), lấy tự động từ logo$/,function(c){return 'Theme color '+c+', picked automatically from the logo'}],
+  [/^(\d+) chưa có tài khoản$/,function(n){return n+' without an account'}],
+  [/^(\d+) đã có tài khoản$/,function(n){return n+' with an account'}],
+  [/^(\d+) admin \(bỏ qua\)$/,function(n){return n+' admin'+(+n===1?'':'s')+' (skipped)'}],
+  [/^Tạo (\d+) tài khoản$/,function(n){return 'Create '+n+(+n===1?' account':' accounts')}],
+  [/^STT$/,function(){return 'No.'}],
+  [/^Hoàn tất: (\d+)\/(\d+) · thành công (\d+)$/,function(a,b,c){return 'Done: '+a+'/'+b+' · succeeded '+c}],
+  [/^Đang tạo tài khoản, đừng đóng trang: (\d+)\/(\d+) · thành công (\d+)$/,function(a,b,c){return 'Creating accounts, do not close the page: '+a+'/'+b+' · succeeded '+c}],
+  [/^Supabase giới hạn số lần đăng ký, chờ (\d+) giây rồi tiếp tục\.\.\.$/,function(n){return 'Supabase limits sign-ups; waiting '+n+' s, then continuing...'}],
+  [/^Đã tạo (\d+) tài khoản học sinh$/,function(n){return 'Created '+n+' student account'+(+n===1?'':'s')}],
+  [/^(\d+) tài khoản chưa tạo được\. Mở lại "Tạo tài khoản hàng loạt" để thử lại cho những bạn còn lại\.$/,function(n){return n+' account'+(+n===1?'':'s')+' could not be created. Reopen "Create accounts in bulk" to retry for the remaining students.'}],
+  [/^Tên đăng nhập của (.+) không hợp lệ \(3–30 ký tự: chữ không dấu, số, dấu chấm, gạch\)\.$/,function(n){return 'The username for '+n+' is not valid (3–30 characters: letters without accents, digits, dot, dash).'}],
+  [/^Hai bạn trùng tên đăng nhập: (.+)\.$/,function(u){return 'Two students share the username: '+u+'.'}],
+  [/^Sẽ tạo (\d+) tài khoản học sinh\. Bỏ qua (\d+) bạn đã có tài khoản và (\d+) admin\. Có thể sửa tên đăng nhập trước khi tạo\.$/,function(a,b,c){return 'Will create '+a+' student accounts. Skipping '+b+' with an account and '+c+' admins. You can edit usernames before creating.'}],
+  [/^Tên đăng nhập của (.+)$/,function(n){return 'Username of '+n}]
 ]);

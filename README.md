@@ -57,3 +57,10 @@ core/config → utils → icons → data/* → core/state → components/* → p
 - **Admin** dùng `bo_phieu/vote.html` (nhúng trong trang Bỏ phiếu): chọn ứng viên từ danh sách lớp, đặt số vòng, rồi bắt đầu. Trong lúc bỏ phiếu admin chỉ bỏ phiếu cho chính mình và theo dõi số người đã bỏ phiếu; không nhập số phiếu. Số phiếu do máy chủ đếm khi admin kết thúc vòng (`close_round`), rồi luật đi tiếp / vòng phụ khi đồng điểm áp dụng như trước.
 - Mã: `js/data/vote-logic.js` (luật vòng, không cần mạng), `js/data/vote-api.js` (Supabase).
 - Cơ sở dữ liệu: cài mới dùng `sql/schema.sql`; nếu đã cài trước đó, chạy thêm `sql/update-6.sql` một lần.
+
+## Tạo tài khoản học sinh hàng loạt (admin)
+- Cài đặt > **Tài khoản học sinh** > "Tạo tài khoản hàng loạt". Tạo tài khoản cho mọi học sinh trong danh sách lớp, **bỏ qua** admin (tài khoản admin, hoặc người giữ chức vụ admin trong ban cán sự) và học sinh đã có tài khoản.
+- Tên đăng nhập gợi ý theo quy ước tên + chữ cái đầu họ và tên đệm (Nguyễn Văn Ánh -> `anhnv`), sửa được trước khi tạo. Mật khẩu ngẫu nhiên 8 ký tự chỉ hiện một lần; tải file CSV để phát cho học sinh. Học sinh đổi mật khẩu ngay trong giao diện bỏ phiếu.
+- Không dùng khóa service_role: trình duyệt admin tạo từng tài khoản bằng một kết nối phụ (không đổi phiên của admin), rồi gọi `admin_link_student` để gắn vào đúng học sinh. Cài mới dùng `sql/schema.sql`; nếu đã cài trước đó, chạy thêm `sql/update-7.sql`.
+- Supabase giới hạn số lần đăng ký trong một khoảng thời gian; khi chạm giới hạn, công cụ tự chờ rồi tiếp tục. Lớp đông có thể tăng giới hạn ở Authentication > Rate Limits.
+- Mã: `js/data/account-logic.js` (tên đăng nhập, mật khẩu, phân loại), `js/data/accounts-api.js`, `js/pages/accounts.js`.
