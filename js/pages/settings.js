@@ -3,8 +3,6 @@
 function vSettings(){
   var c=cur(),a=admin(),dis=a?'':' disabled';
   var h=head('Cài đặt','Thông tin lớp và tài khoản');
-  /* Chỉ admin thật mới xem thử được giao diện thành viên; thành viên không bật được giao diện admin */
-  if(S.realRole==='admin')h+='<div class="rolebar"><span>Xem thử vai trò:</span><span class="seg" role="group" aria-label="Vai trò"><button data-act="role" data-r="admin" aria-pressed="'+a+'">Admin</button><button data-act="role" data-r="member" aria-pressed="'+!a+'">Thành viên</button></span><span>Chỉ đổi cách hiển thị, quyền thật lấy từ tài khoản đăng nhập.</span></div>';
 
   /* ---- Tài khoản: ai cũng dùng được ---- */
   h+='<section class="card"><h2>Tài khoản</h2>'+
@@ -46,8 +44,7 @@ function setErr(id,msg){var el=$(id);if(!el)return;el.textContent=msg||'';el.hid
 document.addEventListener('click',function(e){
   var a=e.target.closest('[data-act]');if(!a)return;
   var act=a.dataset.act,c=cur();
-  if(act==='role'){if(S.realRole!=='admin')return;S.role=a.dataset.r;render();toast(admin()?'Đang xem với vai trò Admin':'Đang xem với vai trò Thành viên')}
-  else if(act==='sample')sampleLogo();
+  if(act==='sample')sampleLogo();
   else if(act==='stDel'){
     if(!admin())return;
     var nm3=c.students[+a.dataset.i];

@@ -4,7 +4,7 @@ var GRP_METHOD={lights:'Đèn may mắn',ball:'Bi lăn',manual:'Thủ công'};
 function vGroups(){
   var c=cur();
   return head('Nhóm',esc(c.name))+
-    '<div class="cn-row"><button class="cn-open" onclick="go(\'chianhom\')">'+ic('users',16)+'<span>Công cụ chia nhóm học tập</span></button></div>'+
+    (admin()?'<div class="cn-row"><button class="cn-open" onclick="go(\'chianhom\')">'+ic('users',16)+'<span>Công cụ chia nhóm học tập</span></button></div>':'')+
     '<form class="card" id="grpForm" novalidate><div class="frow"><div style="flex:1;max-width:260px"><label for="grpSubj">Môn học</label>'+
     '<select id="grpSubj">'+GSUBJ.map(function(s){return '<option value="'+s.c+'">'+esc(s.vi)+'</option>'}).join('')+'</select></div>'+
     '<button class="btn" type="submit" id="grpBtn">Xem nhóm</button></div></form><div id="grpOut" aria-live="polite"></div>';

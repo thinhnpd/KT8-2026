@@ -9,7 +9,7 @@ function vFeedback(){
 document.addEventListener('click',function(e){
   var a=e.target.closest('[data-act]');if(!a)return;
   var act=a.dataset.act,c=cur(),i=+a.dataset.i;
-  if(act==='fbDone'){c.feedback[i].st='Đã xử lý';render();toast('Đã đánh dấu đã xử lý')}
+  if(act==='fbDone'&&admin()){c.feedback[i].st='Đã xử lý';render();toast('Đã đánh dấu đã xử lý')}
 });
 
 document.addEventListener('submit',function(e){

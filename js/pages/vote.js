@@ -27,10 +27,9 @@ function finalizeEl(c){
   c.committee=com;c.el.status='closed';
   c.el.sum={add:after.filter(function(x){return before.indexOf(x)<0}),rem:before.filter(function(x){return after.indexOf(x)<0})};
   S.fin=false;
-  var was=S.role;S.role=after.indexOf(S.name)>-1?'admin':'member';
   notifs.unshift({id:Date.now(),i:'vote',t:'Kết quả bầu ban cán sự đã được áp dụng. Danh bạ và quyền admin đã cập nhật.',time:'Vừa xong',pg:'contacts',un:true});
   render();
-  toast(S.role!==was&&S.role==='member'?'Đã chốt kết quả. Bạn không còn là admin của lớp.':'Đã chốt kết quả, Danh bạ và quyền admin đã cập nhật');
+  toast('Đã chốt kết quả, Danh bạ và quyền admin đã cập nhật');
 }
 function vElection(){
   var c=cur(),el=c.el,n=c.students.length,closed=el.status==='closed',a=admin(),showRes=a||closed,g=groupsOf(c),myT=c.students.indexOf(S.name)%4;
