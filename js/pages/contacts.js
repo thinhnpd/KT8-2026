@@ -3,7 +3,7 @@
 /* Danh bạ */
 function contactRows(c){
   var rows=[];
-  c.teachers.forEach(function(t,i){rows.push({k:'t:'+i,kind:'teacher',n:t.n,email:t.email,phone:t.phone,subj:t.s,talent:'',pos:'',role:'Giáo viên',gv:t.gv,me:false,o:i})});
+  c.teachers.forEach(function(t,i){rows.push({k:'t:'+i,kind:'teacher',id:t.id,n:t.n,email:t.email,phone:t.phone,subj:t.s,talent:'',pos:'',role:'Giáo viên',gv:t.gv,me:false,o:i})});
   c.students.forEach(function(s,i){
     var inf=c.info[s]||{},pos=c.committee.filter(function(m){return m.w===s}).map(function(m){return m.r}),isAd=c.admins?c.admins.indexOf(s)>-1:pos.some(function(r){return ADMIN_POS.indexOf(r)>-1});   /* có dữ liệu admin từ cơ sở dữ liệu thì dùng nó, không thì suy từ chức vụ */
     var o=i;if(isAd)o=pos.length?Math.min.apply(null,pos.map(function(r){return POSITIONS.indexOf(r)})):50+i;
@@ -13,13 +13,15 @@ function contactRows(c){
   rows.sort(function(a,b){return ord[a.role]-ord[b.role]||(a.role==='Admin'&&a.kind!==b.kind?(a.kind==='teacher'?-1:1):0)||a.o-b.o});
   return rows;
 }
+function isSelf(r){return r.kind==='student'&&(r.n===S.name||r.n===S.studentName)}   /* không tự xoá chính mình */
 function contactRowHTML(r,k){
   var rt=r.role==='Admin'?'<span class="tag ad">Admin</span>':r.role==='Giáo viên'?'<span class="tag t-b">'+(r.gv?'Giáo viên chủ nhiệm':'Giáo viên')+'</span>':'<span class="tag t-n">Học sinh</span>';
   var can=admin()||(r.me&&r.kind==='student'),onlyT=S.cf==='Giáo viên';
   return '<tr><td class="rn">'+(k+1)+'</td><td><div class="nm"><span class="av sm">'+esc(initials(r.n.replace(/^(Cô|Thầy)\s/,'')))+'</span><span><b style="font-weight:500">'+esc(r.n)+'</b>'+(r.me?' <span class="tag t-g">Bạn</span>':'')+'<span class="sub">'+esc(r.email||'-')+'</span></span></div></td><td>'+esc(r.phone||'-')+'</td><td>'+rt+'</td>'+
     (onlyT?'':'<td>'+(r.pos?r.pos.split(', ').map(function(x){return '<span class="tag t-y">'+esc(x)+'</span>'}).join(' '):'<span class="mu">-</span>')+'</td>')+'<td>'+(r.subj?esc(r.subj):'<span class="mu">-</span>')+'</td>'+
-    (onlyT?'':'<td>'+(r.kind==='student'?(r.talent?esc(r.talent):'<span class="mu">Chưa cập nhật</span>'):'<span class="mu">-</span>')+'</td>')+'<td style="width:40px;text-align:center">'+
-    (can?'<button class="ic-btn ed" data-act="medit" data-k="'+r.k+'" aria-label="Chỉnh sửa '+esc(r.n)+'">'+ic('edit',16)+'</button>':'')+'</td></tr>';
+    (onlyT?'':'<td>'+(r.kind==='student'?(r.talent?esc(r.talent):'<span class="mu">Chưa cập nhật</span>'):'<span class="mu">-</span>')+'</td>')+'<td style="width:64px;text-align:center;white-space:nowrap">'+
+    (can?'<button class="ic-btn ed" data-act="medit" data-k="'+r.k+'" aria-label="Chỉnh sửa '+esc(r.n)+'">'+ic('edit',16)+'</button>':'')+
+    (admin()&&!isSelf(r)?'<button class="ic-btn" data-act="mdel" data-k="'+r.k+'" aria-label="Xoá '+esc(r.n)+'">'+ic('trash',16)+'</button>':'')+'</td></tr>';
 }
 function contactsBody(){
   var q=S.cq,rows=contactRows(cur()).filter(function(r){
@@ -52,6 +54,7 @@ function memberForm(o){
 }
 function validateMember(v){
   if(!v.nn)return 'Nhập họ và tên.';
+  if(v.nn.length>80)return 'Họ và tên tối đa 80 ký tự.';
   if(v.em&&v.em.indexOf('@')<1)return 'Email chưa đúng định dạng.';
   if(v.ph&&!/^[0-9+ .]{8,15}$/.test(v.ph))return 'Số điện thoại chưa đúng.';
   return '';
@@ -59,7 +62,7 @@ function validateMember(v){
 function readMember(){return{nn:$('mn').value.trim().replace(/\s+/g,' '),em:$('mem').value.trim(),ph:$('mph').value.trim(),sj:$('msj').value,tl:$('mtl')?$('mtl').value.trim():''}}
 function saveFailMsg(err){
   var m=(err&&err.message)||'';
-  return m==='forbidden'?'Chỉ admin mới được thay đổi.':m==='last_admin'?'Lớp phải còn ít nhất một admin có tài khoản.':m==='name_taken'?'Tên này đã có trong danh sách.':m==='no_schema'?'Chưa cập nhật cơ sở dữ liệu. Chạy sql/update-10.sql và sql/update-11.sql trong Supabase.':'Không lưu được, vui lòng thử lại.';
+  return m==='forbidden'?'Chỉ admin mới được thay đổi.':m==='last_admin'?'Lớp phải còn ít nhất một admin có tài khoản.':m==='name_taken'?'Tên này đã có trong danh sách.':m==='bad_name'?'Họ và tên không hợp lệ.':m==='no_schema'?'Chưa cập nhật cơ sở dữ liệu. Chạy sql/update-10.sql và sql/update-11.sql trong Supabase.':'Không lưu được, vui lòng thử lại.';
 }
 function editMember(k){
   var c=cur(),p=k.split(':'),kind=p[0]==='t'?'teacher':'student',i=+p[1],o;
@@ -72,7 +75,13 @@ function editMember(k){
     var v=readMember(),m=validateMember(v),er=$('mer');
     if(!m&&kind==='student'&&v.nn!==o.n&&c.students.indexOf(v.nn)>-1)m='Tên này đã có trong danh sách.';
     if(m){er.textContent=m;er.hidden=false;return false}
-    if(kind==='teacher'){var t=c.teachers[i];t.n=v.nn;t.email=v.em;t.phone=v.ph;t.s=v.sj;render();toast('Đã lưu thông tin '+v.nn);return}
+    if(kind==='teacher'){
+      var t=c.teachers[i],tb=$('mok');tb.disabled=true;er.hidden=true;
+      (t.id?API.updateTeacher(t.id,{name:v.nn,email:v.em,phone:v.ph,subj:v.sj}):Promise.reject(new Error('bad_teacher'))).then(function(){
+        t.n=v.nn;t.email=v.em;t.phone=v.ph;t.s=v.sj;closeModal();render();toast('Đã lưu thông tin '+v.nn);
+      }).catch(function(err){console.error(err);tb.disabled=false;er.textContent=saveFailMsg(err);er.hidden=false});
+      return false;
+    }
     var cb=$('mad'),want=cb&&!cb.disabled?cb.checked:null,chg=want!==null&&want!==o.adm.on,b=$('mok');b.disabled=true;er.hidden=true;
     var step=Promise.resolve();
     if(chg)step=step.then(function(){return API.setStudentAdmin(o.n,want)}).then(function(){setAdminLocal(c,o.n,want);o.adm.on=want});
@@ -88,14 +97,40 @@ function addMember(){
   if(!admin())return;
   var c=cur();
   openModal('Thêm thành viên','<label for="mk">Loại thành viên</label><select id="mk"><option value="student">Học sinh</option><option value="teacher">Giáo viên</option></select>'+memberForm({kind:'student',n:'',email:'',phone:'',subj:'',talent:''}),'Thêm',function(){
-    var kind=$('mk').value,v=readMember(),m=validateMember(v),er=$('mer');
+    var kind=$('mk').value,v=readMember(),m=validateMember(v),er=$('mer'),b=$('mok');
     if(!m&&kind==='student'&&c.students.indexOf(v.nn)>-1)m='Tên này đã có trong danh sách.';
     if(m){er.textContent=m;er.hidden=false;return false}
-    if(kind==='teacher')c.teachers.push({n:v.nn,s:v.sj,email:v.em,phone:v.ph,gv:false});
-    else{c.students.push(v.nn);c.info[v.nn]={email:v.em,phone:v.ph,subj:v.sj,talent:v.tl};syncDerived(c)}
-    render();toast('Đã thêm '+v.nn);
+    b.disabled=true;er.hidden=true;
+    var job;
+    if(kind==='teacher')job=API.addTeacher({name:v.nn,email:v.em,phone:v.ph,subj:v.sj}).then(function(id){c.teachers.push({id:id,n:v.nn,s:v.sj,email:v.em,phone:v.ph,gv:false})});
+    else job=API.addStudent(v.nn).then(function(){
+      return API.updateStudent(v.nn,{name:v.nn,email:v.em,phone:v.ph,subj:v.sj,talent:v.tl}).catch(function(err){
+        return API.removeStudent(v.nn).catch(function(){}).then(function(){throw err});   /* không lưu được hồ sơ thì bỏ luôn dòng vừa tạo, tránh để lại học sinh trống */
+      });
+    }).then(function(){c.students.push(v.nn);c.info[v.nn]={email:v.em,phone:v.ph,subj:v.sj,talent:v.tl};syncDerived(c)});
+    job.then(function(){closeModal();render();toast('Đã thêm '+v.nn)})
+      .catch(function(err){console.error(err);b.disabled=false;er.textContent=saveFailMsg(err);er.hidden=false});
+    return false;
   });
   $('mk').onchange=function(){var t=this.value==='teacher';$('mtw').hidden=t;$('msl').textContent=t?'Môn dạy':'Môn hỗ trợ bạn bè'};
+}
+function removeMember(k){
+  if(!admin())return;
+  var c=cur(),p=k.split(':'),teacher=p[0]==='t',i=+p[1],name=teacher?c.teachers[i].n:c.students[i];
+  if(!teacher&&(name===S.name||name===S.studentName))return;
+  var note=teacher?'Giáo viên sẽ bị xoá khỏi danh bạ lớp.':'Học sinh sẽ bị xoá khỏi danh sách lớp, sơ đồ chỗ ngồi và các nhóm học tập. Nếu bạn ấy đã có tài khoản thì tài khoản vẫn còn nhưng không còn gắn với tên nào.';
+  openModal('Xác nhận xoá','<p>Xoá '+esc(name)+' khỏi danh bạ?</p><p class="note">'+note+'<br>Không thể hoàn tác.</p><div class="err" id="mer" hidden></div>','Xoá',function(){
+    var er=$('mer'),b=$('mok');b.disabled=true;er.hidden=true;
+    (teacher?API.removeTeacher(c.teachers[i].id):API.removeStudent(name)).then(function(){
+      if(teacher)c.teachers.splice(i,1);
+      else{
+        var at=c.students.indexOf(name);if(at>-1)c.students.splice(at,1);
+        delete c.info[name];setAdminLocal(c,name,false);syncDerived(c);
+      }
+      closeModal();render();toast('Đã xoá '+name);
+    }).catch(function(err){console.error(err);b.disabled=false;er.textContent=saveFailMsg(err);er.hidden=false});
+    return false;
+  });
 }
 
 document.addEventListener('click',function(e){
@@ -104,6 +139,7 @@ document.addEventListener('click',function(e){
   if(act==='cf'){S.cf=a.dataset.v;render()}
   else if(act==='medit')editMember(a.dataset.k);
   else if(act==='madd')addMember();
+  else if(act==='mdel')removeMember(a.dataset.k);
 });
 
 document.addEventListener('input',function(e){

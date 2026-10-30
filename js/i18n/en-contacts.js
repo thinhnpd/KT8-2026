@@ -15,13 +15,14 @@ I18N.add('en',{
   'Không có':'None','Email chưa đúng định dạng.':'The email format is invalid.',
   'Số điện thoại chưa đúng.':'The phone number is invalid.','Nhập họ và tên.':'Enter a full name.',
   'Tên này đã có trong danh sách.':'This name is already in the list.',
-  'Không tìm thấy thành viên nào.':'No members found.','Tìm trong danh bạ':'Search the directory',
+  'Không tìm thấy thành viên nào.':'No members found.','Họ và tên tối đa 80 ký tự.':'The full name can be at most 80 characters.','Họ và tên không hợp lệ.':'The full name is invalid.','Giáo viên sẽ bị xoá khỏi danh bạ lớp.':'The teacher will be removed from the class contacts.','Học sinh sẽ bị xoá khỏi danh sách lớp, sơ đồ chỗ ngồi và các nhóm học tập. Nếu bạn ấy đã có tài khoản thì tài khoản vẫn còn nhưng không còn gắn với tên nào.':'The student will be removed from the class list, the seating map and the study groups. If they already have an account, the account stays but is no longer linked to any name.','Không thể hoàn tác.':'This cannot be undone.','Tìm trong danh bạ':'Search the directory',
   'Lọc theo vai trò':'Filter by role','Vẽ, hát, bóng đá...':'Drawing, singing, football...',
   'Môn hỗ trợ: bạn đại diện chỉ bài và giúp đỡ cả lớp ở môn đó. Sở trường do học sinh tự điền, admin cũng chỉnh sửa được. Chức vụ cập nhật theo kết quả bầu ban cán sự.':'Supported subject: the representative classmate tutors and helps everyone in that subject. Talents are filled in by students and admins can edit them too. Positions update with the class officer election results.',
   /* sở trường mẫu */
   'Bóng đá':'Football','Chơi guitar':'Playing guitar','Cầu lông':'Badminton','Hát':'Singing',
   'Lập trình':'Programming','Nhảy':'Dancing','Viết văn':'Writing','Vẽ':'Drawing'
 },[
+  [/^Xoá (.+) khỏi danh bạ\?$/,function(n){return 'Remove '+I18N.tr(n)+' from the contacts?'}],
   [/^Đã bổ nhiệm (.+) làm admin$/,function(n){return 'Appointed '+I18N.tr(n)+' as admin'}],
   [/^Đã bãi nhiệm admin của (.+)$/,function(n){return 'Removed admin role from '+I18N.tr(n)}],
   [/^Đã lưu thông tin (.+)$/,function(n){return 'Saved info for '+I18N.tr(n)}],
