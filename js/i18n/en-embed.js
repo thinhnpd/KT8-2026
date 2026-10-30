@@ -9,6 +9,7 @@
       'Thiết lập': 'Settings',
       'Môn học': 'Subject',
       'Toán': 'Maths', 'Ngữ Văn': 'Literature', 'Tiếng Anh': 'English', 'Lịch sử': 'History',
+      'Vật lý': 'Physics', 'Hoá học': 'Chemistry', 'Sinh học': 'Biology', 'Tin học': 'Information Technology', 'Công nghệ': 'Technical Education', 'Địa lý': 'Geography', 'Giáo dục Kinh tế và Pháp luật': 'Economics and Law Education', 'Âm nhạc': 'Music', 'Mỹ thuật': 'Art', 'Tiếng Pháp': 'French',
       'Bắt đầu': 'Start',
       'Danh sách ô': 'Slot list',
       '(mỗi dòng một ô)': '(one slot per line)',

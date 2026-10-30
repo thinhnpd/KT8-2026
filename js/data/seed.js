@@ -5,7 +5,7 @@ function mkInfo(s,k,used){
   var w=noDia(s).toLowerCase().split(/\s+/),last=w[w.length-1],ini=w.slice(0,-1).map(function(x){return x[0]}).join('');
   var em=last+'.'+ini,b=em,n=2;while(used[em]){em=b+n;n++}used[em]=1;
   var v=((k+5)*7919317)%100000000;
-  return{email:em+'@student.edu.vn',phone:'09'+('00000000'+v).slice(-8),subj:k%3===1?SUBJ[(k*5)%7]:'',talent:k%3===0?TAL[(k*3)%8]:''};
+  return{email:em+'@student.edu.vn',phone:'09'+('00000000'+v).slice(-8),subj:k%3===1?SUBJ[(k*5)%SUBJ.length]:'',talent:k%3===0?TAL[(k*3)%8]:''};
 }
 function mkWeeks(){return{
   11:{pins:[],rem:['Thu bài kiểm tra tuần trước'],ev:[{d:0,t:'Chào cờ đầu tuần',c:'Sinh hoạt',det:'Tập trung sân trường lúc 7h00.'},{d:3,t:'Kiểm tra 15 phút môn Toán',c:'Kiểm tra',det:'Chương 1, đại số.',f:'De-cuong-Toan.pdf'}]},

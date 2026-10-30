@@ -30,6 +30,7 @@
     /* môn học */
     'Toán':'Math','Ngữ văn':'Literature','Tiếng Anh':'English','Vật lý':'Physics','Hoá học':'Chemistry',
     'Sinh học':'Biology','Lịch sử':'History',
+    'Tin học':'Information Technology','Công nghệ':'Technical Education','Địa lý':'Geography','Giáo dục Kinh tế và Pháp luật':'Economics and Law Education','Âm nhạc':'Music','Mỹ thuật':'Art','Tiếng Pháp':'French',
     /* loại sự kiện */
     'Sinh hoạt':'Class meeting','Bài tập':'Assignment','Kiểm tra':'Test','Sự kiện':'Event',
     /* chuông thông báo */

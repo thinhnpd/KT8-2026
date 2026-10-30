@@ -5,6 +5,7 @@ I18N.add('en',{
   'Môn học':'Subject','Xem nhóm':'View groups','Đang tải...':'Loading...','Không tải được dữ liệu. Vui lòng thử lại.':'Could not load the data. Please try again.',
   'Lưu bộ nhóm này cho môn:':'Save this group set for subject:','Lưu':'Save',
   'Toán':'Maths','Ngữ Văn':'Literature','Ngữ văn':'Literature','Tiếng Anh':'English','Vật lý':'Physics','Hoá học':'Chemistry','Sinh học':'Biology','Lịch sử':'History',
+  'Tin học':'Information Technology','Công nghệ':'Technical Education','Địa lý':'Geography','Giáo dục Kinh tế và Pháp luật':'Economics and Law Education','Âm nhạc':'Music','Mỹ thuật':'Art','Tiếng Pháp':'French',
   'Sắp có':'Coming soon','chưa bầu':'not elected yet',
   'Mỗi nhóm sẽ có trang riêng. Phần này đang thiết kế nên chưa mở được.':'Each group will have its own page. This part is still being designed, so it cannot be opened yet.',
   'Công cụ chia nhóm học tập':'Study group creator',
