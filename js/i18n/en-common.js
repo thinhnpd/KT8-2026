@@ -18,7 +18,7 @@
     /* nhãn chung */
     'Lớp':'Class','Trường':'School','Họ và tên':'Full name','Ngày':'Date','Thứ':'Day','Loại':'Type',
     'Nội dung':'Content','Tiêu đề':'Title','Chi tiết':'Details','Vai trò':'Role','Chức vụ':'Position',
-    'Bạn':'You','Admin lớp':'Class admin','Admin của lớp:':'Class admins:','Thành viên':'Member',
+    'Bạn':'You','Admin lớp':'Class admin','Cán sự lớp':'Class manager','Admin của lớp:':'Class admins:','Thành viên':'Member',
     'Giáo viên':'Teacher','Học sinh':'Student','Giáo viên chủ nhiệm':'Homeroom teacher',
     'Hôm nay':'Today','Hôm qua':'Yesterday','Vừa xong':'Just now','Sáng nay':'This morning',
     /* chức vụ */

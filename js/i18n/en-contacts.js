@@ -3,10 +3,15 @@
 I18N.add('en',{
   '. Admin bổ nhiệm hoặc bãi nhiệm admin trong hộp Chỉnh sửa thành viên.':'. Admins can appoint or remove admins in the Edit member box.','Admin của lớp':'Class admin',
   'Admin sửa được thông tin lớp, bản tin, sơ đồ, danh bạ và tạo cuộc bầu. Học sinh chưa có tài khoản sẽ thành admin khi đăng ký.':'Admins can edit class info, the weekly bulletin, the seating map and contacts, and start elections. A student without an account becomes an admin when they register.',
-  'Cơ sở dữ liệu chưa có tính năng này: chạy sql/update-10.sql và sql/update-11.sql trong Supabase trước.':'The database does not have this feature yet: run sql/update-10.sql and sql/update-11.sql in Supabase first.',
+  'Cơ sở dữ liệu chưa có tính năng này: chạy sql/update-10.sql, sql/update-11.sql và sql/update-14.sql trong Supabase trước.':'The database does not have this feature yet: run sql/update-10.sql, sql/update-11.sql and sql/update-14.sql in Supabase first.',
+  'Cán sự lớp:':'Class managers:','chưa có':'none yet','Vai trò trong lớp':'Role in the class',
+  'Admin bổ nhiệm admin, cán sự lớp hoặc thành viên trong hộp Chỉnh sửa thành viên.':'Admins can assign the admin, class manager or member role in the Edit member box.',
+  'Bạn không thể tự đổi vai trò của chính mình. Hãy nhờ admin khác.':'You cannot change your own role. Ask another admin.',
+  'Admin sửa được thông tin lớp, bản tin, sơ đồ, danh bạ và tạo cuộc bầu. Cán sự lớp chỉ sửa được bản tin tuần. Thành viên chỉ xem. Học sinh chưa có tài khoản sẽ nhận vai trò này khi đăng ký.':'Admins can edit class info, the weekly bulletin, the seating map and contacts, and start elections. Class managers can only edit the weekly bulletin. Members can only view. A student without an account gets the chosen role when they register.',
+  'Chỉ admin và cán sự lớp mới được thay đổi.':'Only admins and class managers can make changes.',
   'Bạn không thể tự bãi nhiệm chính mình. Hãy nhờ admin khác.':'You cannot remove your own admin role. Ask another admin.',
   'Lớp phải còn ít nhất một admin có tài khoản.':'The class must keep at least one admin with an account.',
-  'Chưa cập nhật cơ sở dữ liệu. Chạy sql/update-10.sql và sql/update-11.sql trong Supabase.':'The database is not up to date. Run sql/update-10.sql and sql/update-11.sql in Supabase.',
+  'Chưa cập nhật cơ sở dữ liệu. Chạy sql/update-10.sql, sql/update-11.sql và sql/update-14.sql trong Supabase.':'The database is not up to date. Run sql/update-10.sql, sql/update-11.sql and sql/update-14.sql in Supabase.',
   'Chỉ admin mới được thay đổi.':'Only admins can make changes.','Không lưu được, vui lòng thử lại.':'Could not save, please try again.',
   'Danh bạ':'Contacts','SĐT / Zalo':'Phone / Zalo','Số điện thoại / Zalo':'Phone number / Zalo',
   'Sở trường':'Talents','Môn dạy / hỗ trợ':'Subject taught / supported','Môn dạy':'Subject taught',
@@ -23,6 +28,8 @@ I18N.add('en',{
   'Lập trình':'Programming','Nhảy':'Dancing','Viết văn':'Writing','Vẽ':'Drawing'
 },[
   [/^Xoá (.+) khỏi danh bạ\?$/,function(n){return 'Remove '+I18N.tr(n)+' from the contacts?'}],
+  [/^Đã bổ nhiệm (.+) làm cán sự lớp$/,function(n){return 'Appointed '+I18N.tr(n)+' as class manager'}],
+  [/^Đã chuyển (.+) về thành viên$/,function(n){return 'Changed '+I18N.tr(n)+' to member'}],
   [/^Đã bổ nhiệm (.+) làm admin$/,function(n){return 'Appointed '+I18N.tr(n)+' as admin'}],
   [/^Đã bãi nhiệm admin của (.+)$/,function(n){return 'Removed admin role from '+I18N.tr(n)}],
   [/^Đã lưu thông tin (.+)$/,function(n){return 'Saved info for '+I18N.tr(n)}],

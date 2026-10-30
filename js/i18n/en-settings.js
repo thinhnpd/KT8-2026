@@ -38,7 +38,7 @@ I18N.add('en',{
   'Thoát khỏi lớp này để đăng nhập hoặc đăng ký tài khoản khác.':'Leave this class to sign in or register with another account.',
   'Chưa mở, sẽ làm cùng màn hình đăng nhập và đăng ký.':'Not available yet; it will arrive with the sign-in and register screens.',
   'Chỉ dùng để xem thử, bản thật lấy từ tài khoản đăng nhập.':'For preview only; the real role comes from the signed-in account.',
-  'Bạn đang xem với vai trò thành viên, chỉ admin mới chỉnh sửa được.':'You are viewing as a member; only admins can edit.',
+  'Bạn đang xem với vai trò cán sự lớp, chỉ admin mới chỉnh sửa được trang này.':'You are viewing as a class manager; only admins can edit this page.','Bạn đang xem với vai trò thành viên, chỉ admin mới chỉnh sửa được.':'You are viewing as a member; only admins can edit.',
   'Đã đổi logo, màu giao diện lấy từ logo':'Logo changed; the theme color was taken from the logo',
   'Đã đổi logo, không tìm được màu nổi bật nên giữ màu cũ':'Logo changed; no prominent color was found, so the old color is kept',
   'Không đọc được ảnh này, thử tệp PNG hoặc JPG khác':'Cannot read this image; try another PNG or JPG file',

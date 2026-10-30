@@ -52,6 +52,13 @@ core/config → utils → icons → data/* → core/state → components/* → p
 - Thành viên thường không thấy các nút này; quyền ghi cũng được chặn ở máy chủ (RLS).
 - Dữ liệu lưu ở bảng `class_weeks`. **Chạy `sql/update-5.sql` một lần** trong Supabase > SQL Editor nếu bạn đã chạy `schema.sql` trước đây (cài mới thì `schema.sql` đã có sẵn). Chưa chạy thì chỉnh sửa vẫn hiện trên máy bạn nhưng sẽ mất khi tải lại trang.
 
+## Vai trò: Admin, Cán sự lớp, Thành viên
+- **Admin**: sửa mọi thứ, đổi cài đặt lớp, bổ nhiệm vai trò cho người khác.
+- **Cán sự lớp** (manager, thấp hơn admin, cao hơn thành viên): chỉ sửa được **bản tin tuần** (sự kiện, tin ghim, nhắc nhở, trực nhật). Không đổi được cài đặt lớp, không bổ nhiệm ai, không sửa danh bạ hay sơ đồ.
+- **Thành viên**: chỉ xem và sửa hồ sơ của mình.
+- Admin chọn vai trò trong hộp **Chỉnh sửa thành viên** (Danh bạ), ô "Vai trò trong lớp" là danh sách chọn Admin / Cán sự lớp / Thành viên. Học sinh chưa có tài khoản sẽ nhận đúng vai trò đó khi đăng ký. Vai trò mới có hiệu lực khi người đó tải lại trang.
+- **Chạy `sql/update-14.sql` một lần** trong Supabase > SQL Editor (sau `update-5.sql`, `update-10.sql`, `update-11.sql`). Quyền ghi bản tin tuần của cán sự lớp được chặn ở máy chủ (RLS) chứ không chỉ ẩn nút trên giao diện.
+
 ## Bỏ phiếu trực tuyến (admin theo dõi, học sinh bỏ phiếu)
 - **Học sinh** đăng nhập sẽ vào thẳng `bo_phieu/student.html`: chỉ xem cuộc bỏ phiếu đang diễn ra và gửi một phiếu mỗi vòng (phiếu kín, không đổi được). Các trang khác của lớp không mở được với tài khoản học sinh.
 - **Admin** dùng `bo_phieu/vote.html` (nhúng trong trang Bỏ phiếu): chọn ứng viên từ danh sách lớp, đặt số vòng, rồi bắt đầu. Trong lúc bỏ phiếu admin chỉ bỏ phiếu cho chính mình và theo dõi số người đã bỏ phiếu; không nhập số phiếu. Số phiếu do máy chủ đếm khi admin kết thúc vòng (`close_round`), rồi luật đi tiếp / vòng phụ khi đồng điểm áp dụng như trước.

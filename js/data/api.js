@@ -89,11 +89,15 @@ var API = (function () {
   async function loadClass() {
     var p = await me();
     var cls = ok(await SB.from('classes').select('*').eq('id', p.class_id).single());
-    var st, adminCol = true;   // cột students.is_admin do sql/update-10.sql thêm; chưa có thì vẫn nạp được lớp
-    try { st = ok(await SB.from('students').select('id, full_name, subject, talent, is_admin, student_contacts(email, phone)').eq('class_id', p.class_id).order('full_name')); }
+    var st, adminCol = true, mgrCol = true;   // students.is_admin do sql/update-10.sql thêm, students.is_manager do sql/update-14.sql thêm; thiếu thì vẫn nạp được lớp
+    try { st = ok(await SB.from('students').select('id, full_name, subject, talent, is_admin, is_manager, student_contacts(email, phone)').eq('class_id', p.class_id).order('full_name')); }
     catch (e) {
-      adminCol = false; console.warn('Chưa có students.is_admin (chạy sql/update-10.sql)', e);
-      st = ok(await SB.from('students').select('id, full_name, subject, talent, student_contacts(email, phone)').eq('class_id', p.class_id).order('full_name'));
+      mgrCol = false; console.warn('Chưa có students.is_manager (chạy sql/update-14.sql)', e);
+      try { st = ok(await SB.from('students').select('id, full_name, subject, talent, is_admin, student_contacts(email, phone)').eq('class_id', p.class_id).order('full_name')); }
+      catch (e2) {
+        adminCol = false; console.warn('Chưa có students.is_admin (chạy sql/update-10.sql)', e2);
+        st = ok(await SB.from('students').select('id, full_name, subject, talent, student_contacts(email, phone)').eq('class_id', p.class_id).order('full_name'));
+      }
     }
     var tc = ok(await SB.from('teachers').select('*').eq('class_id', p.class_id));
     var cm = ok(await SB.from('committee').select('position, student_id').eq('class_id', p.class_id));
@@ -105,6 +109,7 @@ var API = (function () {
     st.forEach(function (s) { var k = s.student_contacts || {}; C.info[s.full_name] = { email: k.email || '', phone: k.phone || '', subj: s.subject, talent: s.talent }; });
     C.teachers = tc.map(function (t) { return { id: t.id, n: t.name, s: t.subject, email: t.email, phone: t.phone, gv: t.is_homeroom }; });
     C.admins = adminCol ? st.filter(function (s) { return s.is_admin; }).map(function (s) { return s.full_name; }) : undefined;   // học sinh được bổ nhiệm admin
+    C.managers = (adminCol && mgrCol) ? st.filter(function (s) { return s.is_manager && !s.is_admin; }).map(function (s) { return s.full_name; }) : undefined;   // cán sự lớp
     C.adminNames = undefined;
     if (C.admins) {   // danh sách hiển thị: thêm cả admin đăng ký riêng, chưa gắn với dòng học sinh nào
       var an = C.admins.slice(), seen = {};
@@ -198,6 +203,12 @@ var API = (function () {
     if (r.error) throw (/duplicate|unique/i.test(r.error.message) ? new Error('name_taken') : /forbidden|bad_student|bad_name/.exec(r.error.message) ? new Error(/forbidden|bad_student|bad_name/.exec(r.error.message)[0]) : explain(r.error));
     if (o.name !== oldName) { ids.byName[o.name] = id; delete ids.byName[oldName]; ids.byId[id] = o.name; }
   }
+  /* Phân vai trò: 'admin' | 'manager' (cán sự lớp) | 'student' (thành viên). Chỉ admin; máy chủ kiểm tra lại. */
+  async function setStudentRole(name, role) {
+    var id = idOf(name); if (!id) throw new Error('bad_student');
+    var r = await SB.rpc('set_student_role', { p_student_id: id, p_role: role });
+    if (r.error) { var m = /forbidden|last_admin|bad_student|bad_role/.exec(r.error.message); throw (m ? new Error(m[0]) : explain(r.error)); }
+  }
   async function rotateAdminCode() { var r = await SB.rpc('rotate_admin_code'); if (r.error) throw (/forbidden/.test(r.error.message) ? new Error('forbidden') : explain(r.error)); return r.data; }
   async function removeStudent(name) {
     var id = ids.byName[name]; if (!id) return;
@@ -223,6 +234,24 @@ var API = (function () {
     var r = await SB.from('teachers').delete().eq('id', id).select('id');
     if (r.error) throw explain(r.error);
     if (!r.data.length) throw new Error('forbidden');
+  }
+
+  /* ---------- Bản tin tuần (bảng class_weeks, sql/update-5.sql): admin và cán sự lớp ghi được ---------- */
+  async function loadWeeks() {   // -> {tuần: data}
+    var p = await me();
+    var out = {};
+    ok(await SB.from('class_weeks').select('week, data').eq('class_id', p.class_id)).forEach(function (r) { out[r.week] = r.data; });
+    return out;
+  }
+  async function saveWeek(week, data) {
+    var p = await me();
+    var r = await SB.from('class_weeks').upsert({ class_id: p.class_id, week: week, data: data, updated_by: p.id, updated_at: new Date().toISOString() }, { onConflict: 'class_id,week' }).select('week');
+    if (r.error) throw (/row-level security|permission denied/i.test(r.error.message) ? new Error('forbidden') : explain(r.error));
+    if (!r.data.length) throw new Error('forbidden');
+  }
+  function onWeeks(cb) {   // cb(tuần, data) khi người khác vừa lưu
+    return SB.channel('weeks').on('postgres_changes', { event: '*', schema: 'public', table: 'class_weeks' },
+      function (e) { if (e.new && e.new.week != null) cb(e.new.week, e.new.data); }).subscribe();
   }
 
   /* ---------- Sơ đồ lớp ---------- */
@@ -310,7 +339,7 @@ var API = (function () {
     return SB.channel('rounds').on('postgres_changes', { event: '*', schema: 'public', table: 'rounds' }, cb).subscribe();
   }
 
-  return { addTeacher: addTeacher, updateTeacher: updateTeacher, removeTeacher: removeTeacher, unlinkedStudents: unlinkedStudents, linkMyStudent: linkMyStudent, roundStatus: roundStatus, getJoinCode: getJoinCode, rotateJoinCode: rotateJoinCode, rotateAdminCode: rotateAdminCode, setStudentAdmin: setStudentAdmin, updateStudent: updateStudent, addStudents: addStudents, saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
+  return { setStudentRole: setStudentRole, loadWeeks: loadWeeks, saveWeek: saveWeek, onWeeks: onWeeks, addTeacher: addTeacher, updateTeacher: updateTeacher, removeTeacher: removeTeacher, unlinkedStudents: unlinkedStudents, linkMyStudent: linkMyStudent, roundStatus: roundStatus, getJoinCode: getJoinCode, rotateJoinCode: rotateJoinCode, rotateAdminCode: rotateAdminCode, setStudentAdmin: setStudentAdmin, updateStudent: updateStudent, addStudents: addStudents, saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
     loadClass: loadClass, idOf: idOf, nameOf: nameOf, loadNotifs: loadNotifs, onNotif: onNotif, markRead: markRead, notify: notify,
     saveGroups: saveGroups, loadGroups: loadGroups, createElection: createElection, openRound: openRound, openRounds: openRounds,
     castBallot: castBallot, progress: progress, closeRound: closeRound, saveOutcomes: saveOutcomes, onRounds: onRounds };

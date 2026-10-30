@@ -28,7 +28,7 @@ function dutyHTML(c,wk){
     (D.tasks.length?'<div class="scroll"><div class="dutyg">'+cols+'</div></div>':'<p class="mu">Chưa có phân công trực nhật.</p>')+'</div>';
 }
 /* Quyền chỉnh sửa: chỉ admin, và chỉ với tuần hiện tại hoặc tuần sau */
-function canEdit(){return admin()&&S.week>=CUR}
+function canEdit(){return canManage()&&S.week>=CUR}
 function actBtns(kind,i,name){
   return '<button class="ic-btn ed" data-act="'+kind+'Edit" data-i="'+i+'" aria-label="Chỉnh sửa">'+ic('edit',15)+'</button><button class="ic-btn" data-act="'+kind+'Del" data-i="'+i+'" aria-label="Xoá">'+ic('trash',15)+'</button>';
 }
@@ -41,7 +41,7 @@ function vEvent(){
     '<span class="grow"></span><label class="srch" style="margin:0">'+ic('search',15)+'<input id="q" type="text" placeholder="Tìm kiếm" aria-label="Tìm kiếm" value="'+esc(S.q)+'"></label>'+
     '<div class="chipw"><button class="chip" data-act="pop" aria-haspopup="true">'+ic('eye',15)+'Đã đọc: '+r.n+'/'+n+'</button><div class="pop" id="pop" hidden><b style="font-weight:500">Chưa đọc ('+un+')</b><br>'+(un?c.students.slice(-Math.min(un,8)).map(esc).join('<br>')+(un>8?'<br>…':''):'Cả lớp đã đọc.')+'</div></div></div>';
   if(ro)h+='<div class="banner">'+ic('lock',16)+'<span>Tuần đã qua, chỉ xem, không chỉnh sửa được.</span></div>';
-  if(empty){h+='<div class="empty" style="margin-bottom:10px">'+ic('calendar-plus',34)+'<p>'+(ro?'Tuần này không có thông báo nào.':'Chưa có thông báo cho tuần này.'+(admin()?' Bấm Thêm thông tin để lên lịch trước.':''))+'</p></div>'+dutyHTML(c,wk);return h}
+  if(empty){h+='<div class="empty" style="margin-bottom:10px">'+ic('calendar-plus',34)+'<p>'+(ro?'Tuần này không có thông báo nào.':'Chưa có thông báo cho tuần này.'+(canManage()?' Bấm Thêm thông tin để lên lịch trước.':''))+'</p></div>'+dutyHTML(c,wk);return h}
   h+='<div class="row2"><div class="bx"><h5>'+ic('pin',13)+'Tin ghim quan trọng</h5>'+(d.pins.length?d.pins.map(function(p,i){return '<p class="itm"><span><span class="tag t-r">'+esc(p.tag||'Quan trọng')+'</span> <b style="font-weight:500">'+esc(p.t)+'</b>'+(p.det?'<br><span class="mu">'+esc(p.det)+'</span>':'')+(p.f?' <span class="file">'+ic('paperclip',13)+esc(p.f)+'</span>':'')+'</span>'+(can?'<span class="racts">'+actBtns('pin',i,p.t)+'</span>':'')+'</p>'}).join(''):'<p class="mu">Không có tin ghim.</p>')+'</div>'+
     '<div class="bx"><h5>Nhắc nhở và việc cần làm</h5>'+(d.rem.length?d.rem.map(function(x,i){return '<p class="itm"><span>• '+esc(x)+'</span>'+(can?'<span class="racts">'+actBtns('rem',i,x)+'</span>':'')+'</p>'}).join(''):'<p class="mu">Không có nhắc nhở.</p>')+'</div></div>';
   h+=dutyHTML(c,wk);
@@ -50,12 +50,12 @@ function vEvent(){
   return h;
 }
 
-/* Lưu tuần lên máy chủ (chỉ admin ghi được nhờ RLS). Lỗi thì giữ thay đổi tại máy và báo cho người dùng */
+/* Lưu tuần lên máy chủ (admin và cán sự lớp ghi được nhờ RLS). Lỗi thì giữ thay đổi tại máy và báo cho người dùng */
 function persist(w){
   if(typeof API==='undefined'||!API.saveWeek)return;
   API.saveWeek(w,wkData(cur(),w)).catch(function(err){
     console.error(err);
-    toast(err.message==='forbidden'?'Chỉ admin mới được thay đổi.':err.message==='no_schema'?'Chưa lưu được lên máy chủ: hãy chạy sql/update-5.sql trong Supabase.':'Không lưu được lên máy chủ, vui lòng thử lại.');
+    toast(err.message==='forbidden'?'Chỉ admin và cán sự lớp mới được thay đổi.':err.message==='no_schema'?'Chưa lưu được lên máy chủ: hãy chạy sql/update-5.sql trong Supabase.':'Không lưu được lên máy chủ, vui lòng thử lại.');
   });
 }
 function confirmDel(msg,fn){openModal('Xác nhận xoá','<p>'+esc(msg)+'</p>','Xoá',function(){fn()})}
@@ -76,7 +76,7 @@ function itemModal(kind,idx){
     '<div id="dtx"'+(edit&&kind==='rem'?' hidden':'')+'><label for="mx">Chi tiết</label><textarea id="mx" placeholder="Phạm vi, địa điểm, lưu ý">'+esc(vd)+'</textarea>'+
     '<label for="mf">Đính kèm (ảnh, PDF)</label><input type="file" id="mf">'+(vf?'<div class="mu" style="margin-top:4px;font-size:12px">Tệp hiện tại: '+esc(vf)+'. Chọn tệp mới để thay thế.</div>':'')+'</div>';
   openModal(edit?'Chỉnh sửa thông tin':'Thêm thông tin',body,edit?'Lưu thay đổi':'Đăng tin',function(){
-    if(!admin())return false;
+    if(!canManage())return false;
     var t=$('ml').value.trim();if(!t){$('me').hidden=false;$('ml').focus();return false}
     var w=edit?S.week:+$('mw').value,k=edit?kind:$('mc').value,fl=kind==='rem'&&edit?null:$('mf').files[0],f=fl?fl.name:vf,d=wkData(cur(),w),det=$('mx').value.trim();
     if(k==='ev'){var o={d:+$('md').value,t:t,c:$('mt').value,det:det,f:f};if(edit)d.ev[idx]=o;else d.ev.push(o)}
@@ -117,7 +117,7 @@ function dutyModal(){
   var src=dutyData(cur(),S.week);
   DE={tasks:src.tasks.slice(),cells:JSON.parse(JSON.stringify(src.cells))};
   openModal('Chỉnh sửa trực nhật','<div id="dtb"></div>','Lưu thay đổi',function(){
-    if(!admin())return false;
+    if(!canManage())return false;
     dutySync();
     if(DE.tasks.some(function(t){return !t.trim()})){$('dte').hidden=false;return false}
     var cells={};
@@ -137,7 +137,7 @@ document.addEventListener('click',function(e){
   if(act==='wk'){S.week+=+a.dataset.d;render()}
   else if(act==='read'){var r=rd(c,S.week);if(!r.me){r.me=true;r.n=Math.min(c.students.length,r.n+1);render()}}
   else if(act==='pop'){var p=$('pop');p.hidden=!p.hidden}
-  else if(!admin()||S.week<CUR)return;
+  else if(!canManage()||S.week<CUR)return;
   else if(act==='addEv')addEv();
   else if(act==='evEdit')itemModal('ev',+a.dataset.i);
   else if(act==='pinEdit')itemModal('pin',+a.dataset.i);
