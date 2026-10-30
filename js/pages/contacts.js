@@ -48,7 +48,7 @@ function memberForm(o){
   return '<label for="mn">Họ và tên</label><input type="text" id="mn" value="'+esc(o.n)+'" autocomplete="off"'+(admin()?'':' readonly')+'>'+
     '<div class="g2"><div><label for="mem">Email</label><input type="text" id="mem" value="'+esc(o.email)+'" autocomplete="off"></div><div><label for="mph">Số điện thoại / Zalo</label><input type="text" id="mph" value="'+esc(o.phone)+'" autocomplete="off"></div></div>'+
     '<div class="g2"><div><label id="msl" for="msj">'+(o.kind==='teacher'?'Môn dạy':'Môn hỗ trợ bạn bè')+'</label><select id="msj">'+so+'</select></div>'+
-    (o.kind==='student'?'<div id="mtw"><label for="mtl">Sở trường</label><input type="text" id="mtl" value="'+esc(o.talent)+'" autocomplete="off" placeholder="Vẽ, hát, bóng đá..."></div>':'')+'</div>'+(o.adm?'<label class="chk" style="margin-top:12px"><input type="checkbox" id="mad"'+(o.adm.on?' checked':'')+(o.adm.self?' disabled':'')+'> Admin của lớp</label><div class="note">'+(o.adm.self?'Bạn không thể tự bãi nhiệm chính mình. Hãy nhờ admin khác.':'Admin sửa được thông tin lớp, bản tin, sơ đồ, danh bạ và tạo cuộc bầu. Học sinh chưa có tài khoản sẽ thành admin khi đăng ký.')+'</div>':'')+'<div class="err" id="mer" hidden></div>';
+    (o.kind==='student'?'<div id="mtw"><label for="mtl">Sở trường</label><input type="text" id="mtl" value="'+esc(o.talent)+'" autocomplete="off" placeholder="Vẽ, hát, bóng đá..."></div>':'')+'</div>'+(o.adm?'<label class="chk" style="margin-top:12px"><input type="checkbox" id="mad"'+(o.adm.on?' checked':'')+(o.adm.self?' disabled':'')+'> Admin của lớp</label><div class="note">'+(o.adm.self?'Bạn không thể tự bãi nhiệm chính mình. Hãy nhờ admin khác.':'Admin sửa được thông tin lớp, bản tin, sơ đồ, danh bạ và tạo cuộc bầu. Học sinh chưa có tài khoản sẽ thành admin khi đăng ký.')+(o.adm.ready?'':' Cơ sở dữ liệu chưa có tính năng này: chạy sql/update-10.sql và sql/update-11.sql trong Supabase trước.')+'</div>':'')+'<div class="err" id="mer" hidden></div>';
 }
 function validateMember(v){
   if(!v.nn)return 'Nhập họ và tên.';
@@ -66,7 +66,7 @@ function editMember(k){
   if(kind==='teacher'){if(!admin())return;var t=c.teachers[i];o={kind:kind,n:t.n,email:t.email,phone:t.phone,subj:t.s,talent:''}}
   else{
     var s=c.students[i];if(!admin()&&s!==S.name)return;var inf=c.info[s];o={kind:kind,n:s,email:inf.email,phone:inf.phone,subj:inf.subj,talent:inf.talent};
-    if(admin()&&c.admins)o.adm={on:c.admins.indexOf(s)>-1,self:s===S.studentName||s===S.name};   /* ô bổ nhiệm admin: chỉ admin thấy, không tự bãi nhiệm mình */
+    if(admin()){var self=s===S.studentName||s===S.name;o.adm={on:self||(c.admins?c.admins.indexOf(s)>-1:false),self:self,ready:!!c.admins};}   /* ô bổ nhiệm admin: admin nào cũng thấy; không tự bãi nhiệm mình */
   }
   openModal('Chỉnh sửa thành viên',memberForm(o),'Lưu thay đổi',function(){
     var v=readMember(),m=validateMember(v),er=$('mer');

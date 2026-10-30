@@ -3,6 +3,7 @@
 I18N.add('en',{
   '. Admin bổ nhiệm hoặc bãi nhiệm admin trong hộp Chỉnh sửa thành viên.':'. Admins can appoint or remove admins in the Edit member box.','Admin của lớp':'Class admin',
   'Admin sửa được thông tin lớp, bản tin, sơ đồ, danh bạ và tạo cuộc bầu. Học sinh chưa có tài khoản sẽ thành admin khi đăng ký.':'Admins can edit class info, the weekly bulletin, the seating map and contacts, and start elections. A student without an account becomes an admin when they register.',
+  'Cơ sở dữ liệu chưa có tính năng này: chạy sql/update-10.sql và sql/update-11.sql trong Supabase trước.':'The database does not have this feature yet: run sql/update-10.sql and sql/update-11.sql in Supabase first.',
   'Bạn không thể tự bãi nhiệm chính mình. Hãy nhờ admin khác.':'You cannot remove your own admin role. Ask another admin.',
   'Lớp phải còn ít nhất một admin có tài khoản.':'The class must keep at least one admin with an account.',
   'Chưa cập nhật cơ sở dữ liệu. Chạy sql/update-10.sql và sql/update-11.sql trong Supabase.':'The database is not up to date. Run sql/update-10.sql and sql/update-11.sql in Supabase.',
