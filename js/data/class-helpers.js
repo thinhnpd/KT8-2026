@@ -28,10 +28,16 @@ function syncDerived(c){
 function renameStudent(c,old,nw){
   var i=c.students.indexOf(old);c.students[i]=nw;
   c.committee.forEach(function(m){if(m.w===old)m.w=nw});
+  if(c.admins)c.admins=c.admins.map(function(x){return x===old?nw:x});
+  if(c.adminNames)c.adminNames=c.adminNames.map(function(x){return x===old?nw:x});
   Object.keys(c.el.cands).forEach(function(k){c.el.cands[k].forEach(function(x){if(x.n===old)x.n=nw})});
   c.info[nw]=c.info[old];delete c.info[old];
   [c.map.grid,c.map.saved].forEach(function(g){if(g)g.forEach(function(d){d.seats=d.seats.map(function(s){return s===old?nw:s})})});
   if(S.name===old)S.name=nw;
+}
+function setAdminLocal(c,n,on){   /* cập nhật danh sách admin trong bộ nhớ sau khi máy chủ đã lưu */
+  c.admins=c.admins||[];var i=c.admins.indexOf(n);if(on&&i<0)c.admins.push(n);if(!on&&i>-1)c.admins.splice(i,1);
+  if(c.adminNames){var j=c.adminNames.indexOf(n);if(on&&j<0)c.adminNames.push(n);if(!on&&j>-1)c.adminNames.splice(j,1)}
 }
 function adminList(c,com){
   var out=[],idx={};com=com||c.committee;

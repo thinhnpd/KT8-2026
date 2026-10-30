@@ -89,7 +89,12 @@ var API = (function () {
   async function loadClass() {
     var p = await me();
     var cls = ok(await SB.from('classes').select('*').eq('id', p.class_id).single());
-    var st = ok(await SB.from('students').select('id, full_name, subject, talent, student_contacts(email, phone)').eq('class_id', p.class_id).order('full_name'));
+    var st, adminCol = true;   // cột students.is_admin do sql/update-10.sql thêm; chưa có thì vẫn nạp được lớp
+    try { st = ok(await SB.from('students').select('id, full_name, subject, talent, is_admin, student_contacts(email, phone)').eq('class_id', p.class_id).order('full_name')); }
+    catch (e) {
+      adminCol = false; console.warn('Chưa có students.is_admin (chạy sql/update-10.sql)', e);
+      st = ok(await SB.from('students').select('id, full_name, subject, talent, student_contacts(email, phone)').eq('class_id', p.class_id).order('full_name'));
+    }
     var tc = ok(await SB.from('teachers').select('*').eq('class_id', p.class_id));
     var cm = ok(await SB.from('committee').select('position, student_id').eq('class_id', p.class_id));
     var mrow = ok(await SB.from('class_maps').select('*').eq('class_id', p.class_id).maybeSingle());   // sơ đồ lớp đã xác nhận (có thể chưa có)
@@ -99,6 +104,18 @@ var API = (function () {
     C.info = {};
     st.forEach(function (s) { var k = s.student_contacts || {}; C.info[s.full_name] = { email: k.email || '', phone: k.phone || '', subj: s.subject, talent: s.talent }; });
     C.teachers = tc.map(function (t) { return { n: t.name, s: t.subject, email: t.email, phone: t.phone, gv: t.is_homeroom }; });
+    C.admins = adminCol ? st.filter(function (s) { return s.is_admin; }).map(function (s) { return s.full_name; }) : undefined;   // học sinh được bổ nhiệm admin
+    C.adminNames = undefined;
+    if (C.admins) {   // danh sách hiển thị: thêm cả admin đăng ký riêng, chưa gắn với dòng học sinh nào
+      var an = C.admins.slice(), seen = {};
+      an.forEach(function (n) { seen[n.trim().toLowerCase()] = 1; });
+      try {
+        ok(await SB.from('profiles').select('full_name, username').eq('class_id', p.class_id).eq('role', 'admin')).forEach(function (a) {
+          var n = a.full_name || a.username; if (n && !seen[n.trim().toLowerCase()]) { seen[n.trim().toLowerCase()] = 1; an.push(n); }
+        });
+      } catch (e) { console.warn('Chưa đọc được danh sách admin', e); }
+      C.adminNames = an;
+    }
     C.committee = cm.map(function (m) { return { r: m.position, w: ids.byId[m.student_id] || '' }; });
     if (mrow) {   // dựng lại sơ đồ từ cơ sở dữ liệu: id học sinh -> tên; học sinh đã bị xóa thành chỗ trống
       var grid = mrow.layout.map(function (d) { return { seats: d.map(function (id) { return ids.byId[id] || null; }) }; });
@@ -167,6 +184,19 @@ var API = (function () {
   /* ---------- Mã mời vào lớp (chỉ admin) ---------- */
   async function getJoinCode() { var r = await SB.rpc('get_join_code'); if (r.error) throw (/forbidden/.test(r.error.message) ? new Error('forbidden') : explain(r.error)); return r.data; }
   async function rotateJoinCode() { var r = await SB.rpc('rotate_join_code'); if (r.error) throw (/forbidden/.test(r.error.message) ? new Error('forbidden') : explain(r.error)); return r.data; }
+  /* Bổ nhiệm / bãi nhiệm admin (chỉ admin; máy chủ kiểm tra lại). Học sinh chưa có tài khoản thành admin lúc đăng ký. */
+  async function setStudentAdmin(name, on) {
+    var id = idOf(name); if (!id) throw new Error('bad_student');
+    var r = await SB.rpc('set_student_admin', { p_student_id: id, p_admin: !!on });
+    if (r.error) throw (/forbidden|last_admin|bad_student/.exec(r.error.message) ? new Error(/forbidden|last_admin|bad_student/.exec(r.error.message)[0]) : explain(r.error));
+  }
+  /* Lưu hồ sơ một học sinh: admin sửa được mọi người (kể cả đổi tên); học sinh chỉ sửa hồ sơ của mình và không đổi được tên */
+  async function updateStudent(oldName, o) {   // o: {name, email, phone, subj, talent}
+    var id = idOf(oldName); if (!id) throw new Error('bad_student');
+    var r = await SB.rpc('update_student_info', { p_student_id: id, p_name: o.name, p_email: o.email, p_phone: o.phone, p_subject: o.subj, p_talent: o.talent });
+    if (r.error) throw (/duplicate|unique/i.test(r.error.message) ? new Error('name_taken') : /forbidden|bad_student|bad_name/.exec(r.error.message) ? new Error(/forbidden|bad_student|bad_name/.exec(r.error.message)[0]) : explain(r.error));
+    if (o.name !== oldName) { ids.byName[o.name] = id; delete ids.byName[oldName]; ids.byId[id] = o.name; }
+  }
   async function rotateAdminCode() { var r = await SB.rpc('rotate_admin_code'); if (r.error) throw (/forbidden/.test(r.error.message) ? new Error('forbidden') : explain(r.error)); return r.data; }
   async function removeStudent(name) {
     var id = ids.byName[name]; if (!id) return;
@@ -261,7 +291,7 @@ var API = (function () {
     return SB.channel('rounds').on('postgres_changes', { event: '*', schema: 'public', table: 'rounds' }, cb).subscribe();
   }
 
-  return { unlinkedStudents: unlinkedStudents, linkMyStudent: linkMyStudent, roundStatus: roundStatus, getJoinCode: getJoinCode, rotateJoinCode: rotateJoinCode, rotateAdminCode: rotateAdminCode, addStudents: addStudents, saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
+  return { unlinkedStudents: unlinkedStudents, linkMyStudent: linkMyStudent, roundStatus: roundStatus, getJoinCode: getJoinCode, rotateJoinCode: rotateJoinCode, rotateAdminCode: rotateAdminCode, setStudentAdmin: setStudentAdmin, updateStudent: updateStudent, addStudents: addStudents, saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
     loadClass: loadClass, idOf: idOf, nameOf: nameOf, loadNotifs: loadNotifs, onNotif: onNotif, markRead: markRead, notify: notify,
     saveGroups: saveGroups, loadGroups: loadGroups, createElection: createElection, openRound: openRound, openRounds: openRounds,
     castBallot: castBallot, progress: progress, closeRound: closeRound, saveOutcomes: saveOutcomes, onRounds: onRounds };
