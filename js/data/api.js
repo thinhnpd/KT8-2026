@@ -314,6 +314,26 @@ var API = (function () {
     ok(await SB.from('notifications').insert({ class_id: p.class_id, text: text, page: page || 'event', icon: icon || 'calendar-event', created_by: p.id }));
   }
 
+  /* ---------- Góp ý (bảng feedback, sql/update-16.sql): cả lớp đọc được; gửi và đổi trạng thái qua RPC ---------- */
+  function toFb(r) { return { id: r.id, who: r.author_name || 'Ẩn danh', text: r.text, time: ago(r.created_at), st: r.status }; }
+  async function loadFeedback() {
+    return ok(await SB.from('feedback').select('*').order('created_at', { ascending: false }).limit(200)).map(toFb);
+  }
+  async function postFeedback(text, anon) {   // -> góp ý vừa tạo (dạng hiển thị)
+    var r = await SB.rpc('post_feedback', { p_text: text, p_anon: !!anon });
+    if (r.error) throw (/empty/.test(r.error.message) ? new Error('empty') : /too_long/.test(r.error.message) ? new Error('too_long') : explain(r.error));
+    var row = await SB.from('feedback').select('*').eq('id', r.data).single();
+    return row.error ? { id: r.data, who: anon ? 'Ẩn danh' : S.name, text: text, time: 'Vừa xong', st: 'Mới' } : toFb(row.data);
+  }
+  async function setFeedbackStatus(id, status) {
+    var r = await SB.rpc('set_feedback_status', { p_id: id, p_status: status });
+    if (r.error) throw (/forbidden/.test(r.error.message) ? new Error('forbidden') : explain(r.error));
+  }
+  function onFeedback(cb) {   // cb(sự kiện 'INSERT'|'UPDATE', góp ý) khi có người gửi hoặc admin đổi trạng thái
+    return SB.channel('feedback').on('postgres_changes', { event: '*', schema: 'public', table: 'feedback' },
+      function (e) { if (e.new && e.new.id != null && (e.eventType === 'INSERT' || e.eventType === 'UPDATE')) cb(e.eventType, toFb(e.new)); }).subscribe();
+  }
+
   /* ---------- Nhóm học tập (mỗi môn một bộ) ---------- */
   async function saveGroups(subject, method, groups) {   // groups: [{no, color, members:[tên học sinh]}]
     var payload = groups.map(function (g) { return { no: g.no, color: g.color, members: g.members.map(idOf).filter(Boolean) }; });
@@ -366,7 +386,7 @@ var API = (function () {
     return SB.channel('rounds').on('postgres_changes', { event: '*', schema: 'public', table: 'rounds' }, cb).subscribe();
   }
 
-  return { setStudentRole: setStudentRole, loadWeeks: loadWeeks, saveWeek: saveWeek, uploadWeekFile: uploadWeekFile, fileUrl: fileUrl, removeWeekFiles: removeWeekFiles, onWeeks: onWeeks, addTeacher: addTeacher, updateTeacher: updateTeacher, removeTeacher: removeTeacher, unlinkedStudents: unlinkedStudents, linkMyStudent: linkMyStudent, roundStatus: roundStatus, getJoinCode: getJoinCode, rotateJoinCode: rotateJoinCode, rotateAdminCode: rotateAdminCode, setStudentAdmin: setStudentAdmin, updateStudent: updateStudent, addStudents: addStudents, saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
+  return { setStudentRole: setStudentRole, loadFeedback: loadFeedback, postFeedback: postFeedback, setFeedbackStatus: setFeedbackStatus, onFeedback: onFeedback, loadWeeks: loadWeeks, saveWeek: saveWeek, uploadWeekFile: uploadWeekFile, fileUrl: fileUrl, removeWeekFiles: removeWeekFiles, onWeeks: onWeeks, addTeacher: addTeacher, updateTeacher: updateTeacher, removeTeacher: removeTeacher, unlinkedStudents: unlinkedStudents, linkMyStudent: linkMyStudent, roundStatus: roundStatus, getJoinCode: getJoinCode, rotateJoinCode: rotateJoinCode, rotateAdminCode: rotateAdminCode, setStudentAdmin: setStudentAdmin, updateStudent: updateStudent, addStudents: addStudents, saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
     loadClass: loadClass, idOf: idOf, nameOf: nameOf, loadNotifs: loadNotifs, onNotif: onNotif, markRead: markRead, notify: notify,
     saveGroups: saveGroups, loadGroups: loadGroups, createElection: createElection, openRound: openRound, openRounds: openRounds,
     castBallot: castBallot, progress: progress, closeRound: closeRound, saveOutcomes: saveOutcomes, onRounds: onRounds };

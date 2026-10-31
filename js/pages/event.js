@@ -97,7 +97,7 @@ function itemModal(kind,idx){
     '<div id="pgx"'+(edit&&kind==='pin'?'':' hidden')+'><label for="mg">Nhãn tin ghim</label><select id="mg">'+tags+'</select></div>'+
     '<label for="ml">Tiêu đề</label><input type="text" id="ml" placeholder="Kiểm tra 15 phút môn Sinh học" value="'+esc(vt)+'"><div class="err" id="me" hidden>Nhập tiêu đề trước khi đăng.</div>'+
     '<div id="dtx"'+(edit&&kind==='rem'?' hidden':'')+'><label for="mx">Chi tiết</label><textarea id="mx" placeholder="Phạm vi, địa điểm, lưu ý">'+esc(vd)+'</textarea>'+
-    '<label for="mf">Đính kèm (ảnh, PDF)</label><input type="file" id="mf">'+(vf?'<div class="mu" style="margin-top:4px;font-size:12px">Tệp hiện tại: '+esc(vf)+'. Chọn tệp mới để thay thế.</div><label class="chk"><input type="checkbox" id="mfx"> Gỡ tệp đính kèm</label>':'')+'<div class="err" id="mfe" hidden></div></div>';
+    '<label for="mf">Đính kèm (ảnh, PDF)</label><input type="file" id="mf">'+(vf?'<div class="mu" style="margin-top:4px;font-size:12px">Tệp hiện tại: '+esc(vf)+'. Chọn tệp mới để thay thế.</div><label class="chk-mf"><input type="checkbox" id="mfx"> Gỡ tệp đính kèm</label>':'')+'<div class="err" id="mfe" hidden></div></div>';
   openModal(edit?'Chỉnh sửa thông tin':'Thêm thông tin',body,edit?'Lưu thay đổi':'Đăng tin',function(){
     if(!canManage())return false;
     var t=$('ml').value.trim();if(!t){$('me').hidden=false;$('ml').focus();return false}

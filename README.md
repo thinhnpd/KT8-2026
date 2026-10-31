@@ -77,3 +77,9 @@ core/config → utils → icons → data/* → core/state → components/* → p
 - Tệp đính kèm ở bảng lịch trình và tin ghim là liên kết bấm để tải về. Tệp được lưu thật trong Supabase Storage (bucket riêng tư `bulletin-files`, tối đa 10 MB); đường dẫn lưu ở trường `fp` của từng mục, `f` vẫn là tên hiển thị. Khi sửa mục có thể thay hoặc gỡ tệp; xoá mục hoặc thay tệp sẽ dọn tệp cũ.
 - **Chạy `sql/update-15.sql` một lần** trong Supabase > SQL Editor (sau `update-14.sql`) để tạo bucket và quyền: thành viên cùng lớp tải về được, chỉ admin / cán sự lớp tải lên và xoá.
 - Các mục đăng trước đây chỉ lưu tên tệp (chưa từng tải lên), nên hiện tên tệp nhưng không bấm được; sửa mục và chọn lại tệp để gắn tệp thật.
+
+## Góp ý lưu trên máy chủ
+- Hai góp ý mẫu đã bỏ. Góp ý gửi đi được lưu trong bảng `feedback` và mọi thành viên trong lớp đều đọc được; góp ý mới của người khác hiện ngay, không cần tải lại trang.
+- Góp ý ẩn danh không lưu người gửi (không ai truy ra được, kể cả admin). Gửi góp ý và đổi trạng thái đi qua hàm `post_feedback` / `set_feedback_status` nên không giả tên người khác được; chỉ admin đánh dấu "Đã xử lý".
+- **Chạy `sql/update-16.sql` một lần** trong Supabase > SQL Editor. Chưa chạy thì trang hiện trống và báo lỗi khi gửi.
+- Mã: `js/pages/feedback.js`, `js/data/api.js` (loadFeedback, postFeedback, setFeedbackStatus, onFeedback).

@@ -8,6 +8,14 @@
       var wks=await API.loadWeeks();Object.keys(wks).forEach(function(k){C.weeks[k]=normWeek(wks[k])});
       API.onWeeks(function(w,data){C.weeks[w]=normWeek(data);if(S.page==='event')render()});
     }catch(e){console.warn('[S Class] Chưa tải được bản tin tuần:',e)}
+    try{                                           /* góp ý của lớp (bảng feedback); chưa chạy sql/update-16.sql thì để trống */
+      C.feedback=await API.loadFeedback();
+      API.onFeedback(function(ev,f){
+        var i=C.feedback.findIndex(function(x){return x.id===f.id});
+        if(i<0){if(ev==='INSERT')C.feedback.unshift(f)}else C.feedback[i].st=f.st;
+        if(S.page==='feedback')fbPaintList();
+      });
+    }catch(e){console.warn('[S Class] Chưa tải được góp ý:',e)}
     notifs=await API.loadNotifs();                 /* thông báo của lớp, kèm trạng thái đã đọc của tài khoản này */
     API.onNotif(function(n){notifs.unshift(n);renderBell();renderTop()});   /* thông báo mới hiện ngay, không cần tải lại */
   }catch(err){

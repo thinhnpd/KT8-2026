@@ -32,8 +32,7 @@ function mkClass(){
     teachers:TCH.map(function(t,i){return{n:t[0],s:t[1],email:t[2],phone:t[3],gv:i===0}}),
     committee:POSITIONS.map(function(r,i){var tg=POSG(r);return{r:r,w:tg<0?st[i]:st[8+tg]}}),
     weeks:mkWeeks(),reads:{11:{n:35,me:true},12:{n:32,me:false}},
-    feedback:[{who:st[7],text:'Em đề nghị đổi vị trí quạt trần ở cuối lớp vì rất nóng vào buổi chiều.',time:'Hôm qua',st:'Mới'},{who:'Ẩn danh',text:'Lịch học bù nên báo trước ít nhất 2 ngày.',time:'3 ngày trước',st:'Đã xử lý'}],
-    polls:[{id:'p1',t:'Chọn địa điểm cắm trại',desc:'Cả lớp chọn một địa điểm. Kết quả chốt vào cuối tuần.',opts:[{t:'Suối Mơ',v:14},{t:'Đồi thông',v:9},{t:'Bãi biển',v:6}],my:null,end:'17/10',closed:false,by:'Cô Lê Thu Hằng'},
+    feedback:[],polls:[{id:'p1',t:'Chọn địa điểm cắm trại',desc:'Cả lớp chọn một địa điểm. Kết quả chốt vào cuối tuần.',opts:[{t:'Suối Mơ',v:14},{t:'Đồi thông',v:9},{t:'Bãi biển',v:6}],my:null,end:'17/10',closed:false,by:'Cô Lê Thu Hằng'},
       {id:'p2',t:'Chọn màu áo lớp',desc:'',opts:[{t:'Xanh navy',v:18},{t:'Trắng',v:7},{t:'Xám',v:5}],my:0,end:'10/10',closed:true,by:'Phạm Khánh'}]};
   c.el=seedEl(c);
   var g=buildGrid(st,4,5,2);
