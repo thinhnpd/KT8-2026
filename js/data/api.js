@@ -249,6 +249,33 @@ var API = (function () {
     if (r.error) throw (/row-level security|permission denied/i.test(r.error.message) ? new Error('forbidden') : explain(r.error));
     if (!r.data.length) throw new Error('forbidden');
   }
+  /* ---------- Tệp đính kèm bản tin (Supabase Storage, bucket riêng tư, sql/update-15.sql) ----------
+     Đường dẫn: <class_id>/<tuần>/<mốc thời gian>-<tên tệp không dấu>. Chỉ thành viên cùng lớp đọc được; chỉ admin/cán sự lớp tải lên/xoá. */
+  var FILE_BUCKET = 'bulletin-files', FILE_MAX = 10 * 1024 * 1024;   // 10 MB, khớp giới hạn của bucket
+  async function uploadWeekFile(week, file) {   // -> đường dẫn trong bucket
+    if (file.size > FILE_MAX) throw new Error('too_big');
+    var p = await me();
+    var safe = String(file.name).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(-80) || 'file';
+    var path = p.class_id + '/' + week + '/' + Date.now() + '-' + safe;
+    var r = await SB.storage.from(FILE_BUCKET).upload(path, file, { contentType: file.type || 'application/octet-stream', upsert: false });
+    if (r.error) {
+      if (/row-level security|not authorized|unauthorized|policy/i.test(r.error.message)) throw new Error('forbidden');
+      if (/bucket not found/i.test(r.error.message)) throw new Error('no_bucket');
+      if (/exceeded|too large|payload/i.test(r.error.message)) throw new Error('too_big');
+      throw explain(r.error);
+    }
+    return path;
+  }
+  async function fileUrl(path, name) {   // đường dẫn tạm (2 phút) để tải về, tên tệp tải về giữ nguyên tên gốc
+    var r = await SB.storage.from(FILE_BUCKET).createSignedUrl(path, 120, { download: name || true });
+    if (r.error) throw (/not found|Object not found/i.test(r.error.message) ? new Error('missing') : explain(r.error));
+    return r.data.signedUrl;
+  }
+  async function removeWeekFiles(paths) {   // dọn tệp không còn dùng; lỗi thì bỏ qua (không ảnh hưởng bản tin)
+    paths = (paths || []).filter(Boolean);
+    if (!paths.length) return;
+    try { await SB.storage.from(FILE_BUCKET).remove(paths); } catch (e) { console.warn('[S Class] Không xoá được tệp cũ', e); }
+  }
   function onWeeks(cb) {   // cb(tuần, data) khi người khác vừa lưu
     return SB.channel('weeks').on('postgres_changes', { event: '*', schema: 'public', table: 'class_weeks' },
       function (e) { if (e.new && e.new.week != null) cb(e.new.week, e.new.data); }).subscribe();
@@ -339,7 +366,7 @@ var API = (function () {
     return SB.channel('rounds').on('postgres_changes', { event: '*', schema: 'public', table: 'rounds' }, cb).subscribe();
   }
 
-  return { setStudentRole: setStudentRole, loadWeeks: loadWeeks, saveWeek: saveWeek, onWeeks: onWeeks, addTeacher: addTeacher, updateTeacher: updateTeacher, removeTeacher: removeTeacher, unlinkedStudents: unlinkedStudents, linkMyStudent: linkMyStudent, roundStatus: roundStatus, getJoinCode: getJoinCode, rotateJoinCode: rotateJoinCode, rotateAdminCode: rotateAdminCode, setStudentAdmin: setStudentAdmin, updateStudent: updateStudent, addStudents: addStudents, saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
+  return { setStudentRole: setStudentRole, loadWeeks: loadWeeks, saveWeek: saveWeek, uploadWeekFile: uploadWeekFile, fileUrl: fileUrl, removeWeekFiles: removeWeekFiles, onWeeks: onWeeks, addTeacher: addTeacher, updateTeacher: updateTeacher, removeTeacher: removeTeacher, unlinkedStudents: unlinkedStudents, linkMyStudent: linkMyStudent, roundStatus: roundStatus, getJoinCode: getJoinCode, rotateJoinCode: rotateJoinCode, rotateAdminCode: rotateAdminCode, setStudentAdmin: setStudentAdmin, updateStudent: updateStudent, addStudents: addStudents, saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
     loadClass: loadClass, idOf: idOf, nameOf: nameOf, loadNotifs: loadNotifs, onNotif: onNotif, markRead: markRead, notify: notify,
     saveGroups: saveGroups, loadGroups: loadGroups, createElection: createElection, openRound: openRound, openRounds: openRounds,
     castBallot: castBallot, progress: progress, closeRound: closeRound, saveOutcomes: saveOutcomes, onRounds: onRounds };

@@ -27,3 +27,13 @@ td.racts{display:table-cell;width:56px;text-align:right}
 .dtr{display:grid;grid-template-columns:78px 1fr 1fr;gap:6px;align-items:center;margin-top:4px;font-size:12px}
 .dfoot{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 @media (max-width:640px){.dtr{grid-template-columns:1fr 1fr}.dtr>.mu{grid-column:1/-1}}
+
+/* Hôm nay, tuần hiện tại, tệp đính kèm bấm để tải */
+.tnow{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:color-mix(in srgb,var(--acc) 14%,var(--pn));color:var(--acc-t);font-size:11px;font-weight:500;vertical-align:middle;white-space:nowrap}
+.todayln{display:flex;align-items:center;gap:6px;margin:0 0 10px;font-size:12.5px}
+#tb tr.today td{background:color-mix(in srgb,var(--acc) 8%,var(--pn))}
+a.file.dl{text-decoration:none;cursor:pointer;border-bottom:1px solid transparent}
+a.file.dl:hover,a.file.dl:focus-visible{border-bottom-color:currentColor}
+a.file.dl.busy{opacity:.55;pointer-events:none}
+.file.nolink{color:var(--mu);cursor:default}
+label.chk{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12.5px;cursor:pointer}

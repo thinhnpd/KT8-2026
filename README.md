@@ -71,3 +71,9 @@ core/config → utils → icons → data/* → core/state → components/* → p
 - Không dùng khóa service_role: trình duyệt admin tạo từng tài khoản bằng một kết nối phụ (không đổi phiên của admin), rồi gọi `admin_link_student` để gắn vào đúng học sinh. Cài mới dùng `sql/schema.sql`; nếu đã cài trước đó, chạy thêm `sql/update-7.sql`.
 - Supabase giới hạn số lần đăng ký trong một khoảng thời gian; khi chạm giới hạn, công cụ tự chờ rồi tiếp tục. Lớp đông có thể tăng giới hạn ở Authentication > Rate Limits.
 - Mã: `js/data/account-logic.js` (tên đăng nhập, mật khẩu, phân loại), `js/data/accounts-api.js`, `js/pages/accounts.js`.
+
+## Bản tin tuần: tuần / ngày hiện tại và tệp đính kèm tải được
+- Tuần hiện tại tự tính từ ngày thật của máy (`weekNow()` trong `js/core/config.js`; mốc: tuần 12 bắt đầu Thứ 2, 12/10/2026). Trang Sự kiện mở đúng tuần này, hiện nhãn "Tuần hiện tại", dòng "Hôm nay: Thứ …, ngày/tháng/năm", tô sáng dòng lịch trình và cột trực nhật của hôm nay, và có nút "Về tuần hiện tại" khi đang xem tuần khác.
+- Tệp đính kèm ở bảng lịch trình và tin ghim là liên kết bấm để tải về. Tệp được lưu thật trong Supabase Storage (bucket riêng tư `bulletin-files`, tối đa 10 MB); đường dẫn lưu ở trường `fp` của từng mục, `f` vẫn là tên hiển thị. Khi sửa mục có thể thay hoặc gỡ tệp; xoá mục hoặc thay tệp sẽ dọn tệp cũ.
+- **Chạy `sql/update-15.sql` một lần** trong Supabase > SQL Editor (sau `update-14.sql`) để tạo bucket và quyền: thành viên cùng lớp tải về được, chỉ admin / cán sự lớp tải lên và xoá.
+- Các mục đăng trước đây chỉ lưu tên tệp (chưa từng tải lên), nên hiện tên tệp nhưng không bấm được; sửa mục và chọn lại tệp để gắn tệp thật.

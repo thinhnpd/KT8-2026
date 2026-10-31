@@ -1,6 +1,11 @@
 'use strict';
 /* Hằng số cấu hình dùng chung */
-var CUR=12;
+/* Tuần học được đánh số theo mốc cố định: tuần 12 bắt đầu Thứ 2, 12/10/2026. CUR = tuần chứa ngày hôm nay (tự tính, không sửa tay). */
+var WK0=12,WK0_START=new Date(2026,9,12);
+function weekOf(date){var m=new Date(date.getFullYear(),date.getMonth(),date.getDate()-((date.getDay()+6)%7));return WK0+Math.round((m-WK0_START)/604800000)}   /* làm tròn để không lệch khi đổi giờ mùa hè */
+function weekNow(){return weekOf(new Date())}
+function todayIdx(){return(new Date().getDay()+6)%7}   /* 0 = Thứ 2 ... 6 = CN */
+var CUR=weekNow();
 var DAYS=['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
 var CL={'Sinh hoạt':'g','Bài tập':'y','Kiểm tra':'r','Sự kiện':'b'};
 var GSUBJ=[{c:'To',vi:'Toán',en:'Maths'},{c:'Va',vi:'Ngữ Văn',en:'Literature'},{c:'Anh',vi:'Tiếng Anh',en:'English'},{c:'Su',vi:'Lịch sử',en:'History'},{c:'Ly',vi:'Vật lý',en:'Physics'},{c:'Ho',vi:'Hoá học',en:'Chemistry'},{c:'Si',vi:'Sinh học',en:'Biology'},{c:'Ti',vi:'Tin học',en:'Information Technology'},{c:'Cn',vi:'Công nghệ',en:'Technical Education'},{c:'Di',vi:'Địa lý',en:'Geography'},{c:'Kt',vi:'Giáo dục Kinh tế và Pháp luật',en:'Economics and Law Education'},{c:'An',vi:'Âm nhạc',en:'Music'},{c:'Mt',vi:'Mỹ thuật',en:'Art'},{c:'Ph',vi:'Tiếng Pháp',en:'French'}];   /* môn có bộ nhóm học tập; c = mã lưu trong CSDL (khớp sql/update-12.sql) */

@@ -1,7 +1,16 @@
 'use strict';
 /* English – trang Event (bản tin tuần, lịch trình, nhắc nhở, tin ghim, trực nhật) */
 I18N.add('en',{
-  'Bản tin tuần':'Weekly bulletin','Bấm để xác nhận bạn đã đọc bản tin này.':'Click to confirm you have read this bulletin.',
+  'Bản tin tuần':'Weekly bulletin','Hôm nay':'Today','Tuần hiện tại':'Current week','Về tuần hiện tại':'Back to current week',
+  'Tải xuống':'Download','Gỡ tệp đính kèm':'Remove attachment','Đang tải tệp lên...':'Uploading file...',
+  'Tệp này chưa được tải lên máy chủ':'This file was never uploaded to the server',
+  'Tệp quá lớn, tối đa 10 MB.':'File too large, 10 MB maximum.',
+  'Chỉ admin và cán sự lớp mới được tải tệp lên.':'Only admins and class officers can upload files.',
+  'Chưa tải được tệp: hãy chạy sql/update-15.sql trong Supabase.':'Could not upload: run sql/update-15.sql in Supabase.',
+  'Không tải được tệp lên máy chủ, vui lòng thử lại.':'Could not upload the file, please try again.',
+  'Không tải được tệp, vui lòng thử lại.':'Could not download the file, please try again.',
+  'Không tìm thấy tệp trên máy chủ (có thể đã bị xoá).':'File not found on the server (it may have been deleted).',
+  'Chưa tải được tệp, vui lòng thử lại.':'Could not download the file, please try again.','Bấm để xác nhận bạn đã đọc bản tin này.':'Click to confirm you have read this bulletin.',
   'Mỗi tài khoản bấm một lần. Nút mở lại khi tin được cập nhật.':'Each account confirms once. The button reopens when the bulletin is updated.',
   'Bạn đã đọc':'You have read this','Cả lớp đã đọc.':'The whole class has read it.',
   'Chưa có thông báo cho tuần này. Bấm Thêm thông tin để lên lịch trước.':'No announcements for this week yet. Click Add info to schedule ahead.',
@@ -56,5 +65,6 @@ I18N.add('en',{
   'Thu bài kiểm tra tuần trước':"Collect last week's test papers"
 },[
   [/^Đã đọc: (.+)$/,function(n){return 'Read: '+n}],
+  [/^Hôm nay: (?:Thứ ([2-7])|CN), (.+)$/,function(d,date){return 'Today: '+(d?['','','Mon','Tue','Wed','Thu','Fri','Sat'][+d]:'Sun')+', '+date}],
   [/^Tệp hiện tại: (.+)\. Chọn tệp mới để thay thế\.$/,function(f){return 'Current file: '+f+'. Choose a new file to replace it.'}]
 ]);

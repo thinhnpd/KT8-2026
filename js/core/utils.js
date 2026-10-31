@@ -7,6 +7,6 @@ function noDia(s){return s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g
 function initials(n){var w=n.trim().split(/\s+/);return((w[0]||'?')[0]+(w.length>1?w[w.length-1][0]:'')).toUpperCase()}
 function short(n){var w=n.split(' ');return w[w.length-1]}
 function last2(n){var w=n.trim().split(/\s+/);return w.slice(-2).join(' ')}   /* 2 từ cuối của họ tên, để phân biệt người trùng tên */
-function dt(w,o){return new Date(2026,9,12+(w-CUR)*7+o)}
+function dt(w,o){return new Date(2026,9,12+(w-WK0)*7+o)}
 function ds(w,o){var d=dt(w,o);return pd(d.getDate())+'/'+pd(d.getMonth()+1)}
 function fmtD(d){return pd(d.getDate())+'/'+pd(d.getMonth()+1)}
