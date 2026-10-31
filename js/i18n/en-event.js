@@ -1,7 +1,10 @@
 'use strict';
 /* English – trang Event (bản tin tuần, lịch trình, nhắc nhở, tin ghim, trực nhật) */
 I18N.add('en',{
-  'Bản tin tuần':'Weekly bulletin','Hôm nay':'Today','Tuần hiện tại':'Current week','Về tuần hiện tại':'Back to current week',
+  'Bản tin tuần':'Weekly bulletin','Đang tải...':'Loading...',
+  'Học sinh chưa có tài khoản luôn nằm ở mục chưa đọc.':'Students without an account always stay under unread.',
+  'Chưa lưu được: hãy chạy sql/update-17.sql trong Supabase.':'Not saved: run sql/update-17.sql in Supabase.',
+  'Không lưu được xác nhận đã đọc, vui lòng thử lại.':'Could not save your read confirmation, please try again.','Hôm nay':'Today','Tuần hiện tại':'Current week','Về tuần hiện tại':'Back to current week',
   'Tải xuống':'Download','Gỡ tệp đính kèm':'Remove attachment','Đang tải tệp lên...':'Uploading file...',
   'Tệp này chưa được tải lên máy chủ':'This file was never uploaded to the server',
   'Tệp quá lớn, tối đa 10 MB.':'File too large, 10 MB maximum.',
@@ -65,6 +68,7 @@ I18N.add('en',{
   'Thu bài kiểm tra tuần trước':"Collect last week's test papers"
 },[
   [/^Đã đọc: (.+)$/,function(n){return 'Read: '+n}],
+  [/^Đã đọc \((\d+)\)$/,function(n){return 'Read ('+n+')'}],
   [/^Hôm nay: (?:Thứ ([2-7])|CN), (.+)$/,function(d,date){return 'Today: '+(d?['','','Mon','Tue','Wed','Thu','Fri','Sat'][+d]:'Sun')+', '+date}],
   [/^Tệp hiện tại: (.+)\. Chọn tệp mới để thay thế\.$/,function(f){return 'Current file: '+f+'. Choose a new file to replace it.'}]
 ]);

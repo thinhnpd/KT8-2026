@@ -6,8 +6,12 @@
     await API.loadClass();                         /* học sinh, danh bạ, giáo viên, ban cán sự -> đối tượng C */
     try{                                           /* bản tin tuần đã lưu (bảng class_weeks); chưa chạy sql/update-5.sql thì giữ dữ liệu mẫu */
       var wks=await API.loadWeeks();Object.keys(wks).forEach(function(k){C.weeks[k]=normWeek(wks[k])});
-      API.onWeeks(function(w,data){C.weeks[w]=normWeek(data);if(S.page==='event')render()});
+      API.onWeeks(function(w,data){C.weeks[w]=normWeek(data);if(S.page==='event')render();refreshReads(w)});   /* nội dung đổi -> trigger đã xoá xác nhận cũ, lấy lại trạng thái */
     }catch(e){console.warn('[S Class] Chưa tải được bản tin tuần:',e)}
+    try{                                           /* xác nhận đã đọc (bảng week_reads); chưa chạy sql/update-17.sql thì coi như chưa đọc */
+      (await API.loadMyReads()).forEach(function(w){rd(C,w).me=true});
+      API.onReads(function(w){if(!canManage())return;if(S.page==='event'&&S.week===w)refreshReads(w);else rd(C,w).at=0});
+    }catch(e){console.warn('[S Class] Chưa tải được trạng thái đã đọc:',e)}
     try{                                           /* góp ý của lớp (bảng feedback); chưa chạy sql/update-16.sql thì để trống */
       C.feedback=await API.loadFeedback();
       API.onFeedback(function(ev,f){

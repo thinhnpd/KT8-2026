@@ -37,3 +37,6 @@ a.file.dl:hover,a.file.dl:focus-visible{border-bottom-color:currentColor}
 a.file.dl.busy{opacity:.55;pointer-events:none}
 .file.nolink{color:var(--mu);cursor:default}
 label.chk-mf{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12.5px;cursor:pointer}
+
+/* Danh sách đã đọc / chưa đọc (admin, cán sự lớp) */
+.pop.rdpop{width:240px;max-height:320px;overflow:auto}

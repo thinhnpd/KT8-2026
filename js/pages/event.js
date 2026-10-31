@@ -31,6 +31,33 @@ function fileErr(err){
   return m==='too_big'?'Tệp quá lớn, tối đa 10 MB.':m==='forbidden'?'Chỉ admin và cán sự lớp mới được tải tệp lên.':m==='no_bucket'?'Chưa tải được tệp: hãy chạy sql/update-15.sql trong Supabase.':'Không tải được tệp lên máy chủ, vui lòng thử lại.';
 }
 
+/* Xác nhận đã đọc: mỗi tài khoản một lần mỗi tuần, lưu trên máy chủ (week_reads). Admin / cán sự lớp xem được ai đã đọc, ai chưa */
+function readChipHTML(c,wk){
+  var r=rd(c,wk),set=r.set,n=c.students.length,un=[],ok=[];
+  if(set)c.students.forEach(function(s){(set[s]?ok:un).push(s)});
+  var list=function(a){return a.length?a.map(esc).join('<br>'):'<span class="mu">-</span>'};
+  return '<button class="chip" data-act="pop" aria-haspopup="true">'+ic('eye',15)+'Đã đọc: '+(set?ok.length:'…')+'/'+n+'</button><div class="pop rdpop" id="pop" hidden>'+
+    (set?'<b style="font-weight:500">Chưa đọc ('+un.length+')</b><br>'+(un.length?list(un):'Cả lớp đã đọc.')+'<br><b style="font-weight:500;display:block;margin-top:6px">Đã đọc ('+ok.length+')</b>'+list(ok)+'<div class="mu" style="margin-top:6px">Học sinh chưa có tài khoản luôn nằm ở mục chưa đọc.</div>':'<span class="mu">Đang tải...</span>')+'</div>';
+}
+function readFootHTML(c,wk){
+  var ro=wk<CUR,r=rd(c,wk);
+  return '<span class="note">'+(ro?'Chế độ chỉ đọc.':r.me?'Mỗi tài khoản bấm một lần. Nút mở lại khi tin được cập nhật.':'Bấm để xác nhận bạn đã đọc bản tin này.')+'</span>'+(ro?'':'<button class="btn'+(r.me?' done':'')+'" data-act="read" aria-disabled="'+r.me+'">'+ic('check',15)+(r.me?'Bạn đã đọc':'Đã đọc')+'</button>');
+}
+function paintReads(){   /* chỉ vẽ lại chip và nút Đã đọc, không đụng tới ô tìm kiếm hay form đang mở */
+  if(S.page!=='event')return;
+  var c=cur(),w=S.week,rw=$('rdw'),f=$('rdf');
+  if(rw){var pp=$('pop'),open=pp&&!pp.hidden;rw.innerHTML=readChipHTML(c,w);if(open&&$('pop'))$('pop').hidden=false}
+  if(f)f.innerHTML=readFootHTML(c,w);
+}
+function refreshReads(w){
+  if(typeof API==='undefined'||!API.myRead)return;
+  var c=cur(),r=rd(c,w);
+  API.myRead(w).then(function(v){r.me=v}).catch(function(e){console.warn('[S Class] Chưa lấy được trạng thái đã đọc:',e)}).then(function(){
+    if(!canManage()||!API.weekReaders)return;
+    return API.weekReaders(w).then(function(names){var s={};names.forEach(function(x){s[x]=1});r.set=s;r.n=c.students.filter(function(x){return s[x]}).length});
+  }).catch(function(e){console.warn('[S Class] Chưa lấy được danh sách đã đọc:',e)}).then(function(){r.at=Date.now();paintReads()});
+}
+
 /* Phân công trực nhật: nếu admin đã chỉnh tay thì dùng d.duty = {tasks:[tên việc], cells:{'việc_thứ':[tên,...]}}, nếu không thì tự xoay vòng theo danh sách lớp */
 function dutyData(c,wk){
   var d=wkData(c,wk);if(d.duty)return d.duty;
@@ -55,13 +82,14 @@ function actBtns(kind,i,name){
   return '<button class="ic-btn ed" data-act="'+kind+'Edit" data-i="'+i+'" aria-label="Chỉnh sửa">'+ic('edit',15)+'</button><button class="ic-btn" data-act="'+kind+'Del" data-i="'+i+'" aria-label="Xoá">'+ic('trash',15)+'</button>';
 }
 function vEvent(){
-  var c=cur(),wk=S.week,d=wkData(c,wk),ro=wk<CUR,can=canEdit(),r=rd(c,wk),n=c.students.length;r.n=Math.min(r.n,n);
-  var empty=!d.pins.length&&!d.rem.length&&!d.ev.length,un=n-r.n;
+  var c=cur(),wk=S.week,d=wkData(c,wk),ro=wk<CUR,can=canEdit(),r=rd(c,wk);
+  if(!r.at||Date.now()-r.at>20000){r.at=Date.now();setTimeout(function(){refreshReads(wk)},0)}   /* lấy trạng thái đã đọc thật từ máy chủ */
+  var empty=!d.pins.length&&!d.rem.length&&!d.ev.length;
   var h=head('Bản tin tuần',esc(c.name)+' · '+esc(c.school));
   h+='<div class="bar"><button class="sq" data-act="wk" data-d="-1" aria-label="Tuần trước">'+ic('chevron-left',16)+'</button><div class="wk">Tuần '+wk+' ('+ds(wk,0)+' - '+ds(wk,6)+'/'+dt(wk,6).getFullYear()+')'+(wk===weekNow()?'<span class="tnow">Tuần hiện tại</span>':'')+'</div><button class="sq" data-act="wk" data-d="1" aria-label="Tuần sau">'+ic('chevron-right',16)+'</button>'+(wk!==weekNow()?'<button class="btn gh" data-act="wkNow">Về tuần hiện tại</button>':'')+
     (can?'<button class="btn" data-act="addEv">'+ic('plus',15)+'Thêm thông tin</button>':'')+
     '<span class="grow"></span><label class="srch" style="margin:0">'+ic('search',15)+'<input id="q" type="text" placeholder="Tìm kiếm" aria-label="Tìm kiếm" value="'+esc(S.q)+'"></label>'+
-    '<div class="chipw"><button class="chip" data-act="pop" aria-haspopup="true">'+ic('eye',15)+'Đã đọc: '+r.n+'/'+n+'</button><div class="pop" id="pop" hidden><b style="font-weight:500">Chưa đọc ('+un+')</b><br>'+(un?c.students.slice(-Math.min(un,8)).map(esc).join('<br>')+(un>8?'<br>…':''):'Cả lớp đã đọc.')+'</div></div></div>';
+    (canManage()?'<div class="chipw" id="rdw">'+readChipHTML(c,wk)+'</div>':'')+'</div>';
   h+='<div class="todayln mu">'+ic('calendar-event',14)+'Hôm nay: '+DAYS[todayIdx()]+', '+fmtD(new Date())+'/'+new Date().getFullYear()+'</div>';
   if(ro)h+='<div class="banner">'+ic('lock',16)+'<span>Tuần đã qua, chỉ xem, không chỉnh sửa được.</span></div>';
   if(empty){h+='<div class="empty" style="margin-bottom:10px">'+ic('calendar-plus',34)+'<p>'+(ro?'Tuần này không có thông báo nào.':'Chưa có thông báo cho tuần này.'+(canManage()?' Bấm Thêm thông tin để lên lịch trước.':''))+'</p></div>'+dutyHTML(c,wk);return h}
@@ -69,14 +97,14 @@ function vEvent(){
     '<div class="bx"><h5>Nhắc nhở và việc cần làm</h5>'+(d.rem.length?d.rem.map(function(x,i){return '<p class="itm"><span>• '+esc(x)+'</span>'+(can?'<span class="racts">'+actBtns('rem',i,x)+'</span>':'')+'</p>'}).join(''):'<p class="mu">Không có nhắc nhở.</p>')+'</div></div>';
   h+=dutyHTML(c,wk);
   h+='<div class="scroll"><table style="min-width:560px"><thead><tr><th></th><th>Thứ</th><th>Ngày</th><th>Nội dung</th><th>Loại</th><th>Đính kèm</th>'+(can?'<th></th>':'')+'</tr></thead><tbody id="tb">'+rowsHTML()+'</tbody></table></div>';
-  h+='<div class="ft"><span class="note">'+(ro?'Chế độ chỉ đọc.':r.me?'Mỗi tài khoản bấm một lần. Nút mở lại khi tin được cập nhật.':'Bấm để xác nhận bạn đã đọc bản tin này.')+'</span>'+(ro?'':'<button class="btn'+(r.me?' done':'')+'" data-act="read" aria-disabled="'+r.me+'">'+ic('check',15)+(r.me?'Bạn đã đọc':'Đã đọc')+'</button>')+'</div>';
+  h+='<div class="ft" id="rdf">'+readFootHTML(c,wk)+'</div>';
   return h;
 }
 
 /* Lưu tuần lên máy chủ (admin và cán sự lớp ghi được nhờ RLS). Lỗi thì giữ thay đổi tại máy và báo cho người dùng */
 function persist(w){
   if(typeof API==='undefined'||!API.saveWeek)return;
-  API.saveWeek(w,wkData(cur(),w)).catch(function(err){
+  API.saveWeek(w,wkData(cur(),w)).then(function(){refreshReads(w)}).catch(function(err){
     console.error(err);
     toast(err.message==='forbidden'?'Chỉ admin và cán sự lớp mới được thay đổi.':err.message==='no_schema'?'Chưa lưu được lên máy chủ: hãy chạy sql/update-5.sql trong Supabase.':'Không lưu được lên máy chủ, vui lòng thử lại.');
   });
@@ -108,7 +136,7 @@ function itemModal(kind,idx){
       else if(k==='pin'){var o2={tag:fd.g||'Quan trọng',t:t,det:det};if(f){o2.f=f;o2.fp=fp||undefined}if(edit)d.pins[idx]=o2;else d.pins.push(o2)}
       else{if(edit)d.rem[idx]=t;else d.rem.push(t)}
       if(vp&&vp!==fp&&typeof API!=='undefined'&&API.removeWeekFiles)API.removeWeekFiles([vp]);   /* tệp cũ đã bị thay hoặc gỡ */
-      cur().reads[w]={n:0,me:false};S.week=w;persist(w);closeModal();render();toast(edit?'Đã cập nhật, trạng thái đã đọc được đặt lại':'Đã đăng tin, trạng thái đã đọc được đặt lại');
+      cur().reads[w]={n:0,me:false,at:Date.now()+60000};S.week=w;persist(w);closeModal();render();toast(edit?'Đã cập nhật, trạng thái đã đọc được đặt lại':'Đã đăng tin, trạng thái đã đọc được đặt lại');
     };
     if(!fl){if(rmv)commit('','');else commit(vf,vp);return false}
     if(typeof API==='undefined'||!API.uploadWeekFile){commit(fl.name,'');return false}
@@ -174,7 +202,16 @@ document.addEventListener('click',function(e){
   if(act==='wk'){S.week+=+a.dataset.d;render()}
   else if(act==='wkNow'){S.week=weekNow();render()}
   else if(act==='dl'){e.preventDefault();downloadFile(a)}
-  else if(act==='read'){var r=rd(c,S.week);if(!r.me){r.me=true;r.n=Math.min(c.students.length,r.n+1);render()}}
+  else if(act==='read'){
+    var r=rd(c,S.week),w=S.week;
+    if(!r.me){
+      r.me=true;render();
+      API.markWeekRead(w).then(function(){refreshReads(w)}).catch(function(err){
+        console.error(err);r.me=false;paintReads();
+        toast(err.message==='no_schema'?'Chưa lưu được: hãy chạy sql/update-17.sql trong Supabase.':'Không lưu được xác nhận đã đọc, vui lòng thử lại.');
+      });
+    }
+  }
   else if(act==='pop'){var p=$('pop');p.hidden=!p.hidden}
   else if(!canManage()||S.week<CUR)return;
   else if(act==='addEv')addEv();

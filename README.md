@@ -83,3 +83,9 @@ core/config → utils → icons → data/* → core/state → components/* → p
 - Góp ý ẩn danh không lưu người gửi (không ai truy ra được, kể cả admin). Gửi góp ý và đổi trạng thái đi qua hàm `post_feedback` / `set_feedback_status` nên không giả tên người khác được; chỉ admin đánh dấu "Đã xử lý".
 - **Chạy `sql/update-16.sql` một lần** trong Supabase > SQL Editor. Chưa chạy thì trang hiện trống và báo lỗi khi gửi.
 - Mã: `js/pages/feedback.js`, `js/data/api.js` (loadFeedback, postFeedback, setFeedbackStatus, onFeedback).
+
+## Xác nhận "Đã đọc" của bản tin tuần lưu trên máy chủ
+- Nút **Đã đọc** nay lưu vào bảng `week_reads` (mỗi tài khoản một lần mỗi tuần) thay vì chỉ nhớ trên máy; đăng nhập lại hay đổi máy vẫn còn.
+- **Admin và cán sự lớp** thấy chip "Đã đọc: n/N"; bấm vào để xem danh sách **chưa đọc** và **đã đọc** (cập nhật tức thời khi có người xác nhận). Thành viên thường chỉ thấy trạng thái của chính mình, không xem được của người khác. Học sinh chưa có tài khoản luôn nằm ở mục chưa đọc.
+- Khi nội dung bản tin đổi (thêm / sửa / xoá sự kiện, tin ghim, nhắc nhở) trigger tự xoá xác nhận của tuần đó để mọi người xác nhận lại; sửa phân công trực nhật thì không xoá.
+- **Chạy `sql/update-17.sql` một lần** trong Supabase > SQL Editor (sau `update-14.sql`). Mã: `readChipHTML`, `refreshReads` trong `js/pages/event.js`; `loadMyReads`, `markWeekRead`, `weekReaders`, `onReads` trong `js/data/api.js`.

@@ -334,6 +334,29 @@ var API = (function () {
       function (e) { if (e.new && e.new.id != null && (e.eventType === 'INSERT' || e.eventType === 'UPDATE')) cb(e.eventType, toFb(e.new)); }).subscribe();
   }
 
+  /* ---------- Xác nhận đã đọc bản tin tuần (bảng week_reads, sql/update-17.sql) ---------- */
+  async function loadMyReads() {   // -> các tuần tài khoản này đã xác nhận
+    var s = await session();
+    return ok(await SB.from('week_reads').select('week').eq('profile_id', s.user.id)).map(function (r) { return r.week; });
+  }
+  async function myRead(week) {
+    var s = await session();
+    return ok(await SB.from('week_reads').select('week').eq('profile_id', s.user.id).eq('week', week)).length > 0;
+  }
+  async function markWeekRead(week) {
+    var r = await SB.rpc('mark_week_read', { p_week: week });
+    if (r.error) throw explain(r.error);
+  }
+  async function weekReaders(week) {   // chỉ admin / cán sự lớp -> tên các học sinh đã đọc
+    var r = await SB.rpc('week_readers', { p_week: week });
+    if (r.error) throw (/forbidden/.test(r.error.message) ? new Error('forbidden') : explain(r.error));
+    return r.data.map(function (x) { return nameOf(x.student_id); }).filter(Boolean);
+  }
+  function onReads(cb) {   // cb(tuần) khi có người xác nhận đã đọc (admin / cán sự lớp nhận được của cả lớp)
+    return SB.channel('week_reads').on('postgres_changes', { event: '*', schema: 'public', table: 'week_reads' },
+      function (e) { var x = e.new && e.new.week != null ? e.new : e.old; if (x && x.week != null) cb(x.week); }).subscribe();
+  }
+
   /* ---------- Nhóm học tập (mỗi môn một bộ) ---------- */
   async function saveGroups(subject, method, groups) {   // groups: [{no, color, members:[tên học sinh]}]
     var payload = groups.map(function (g) { return { no: g.no, color: g.color, members: g.members.map(idOf).filter(Boolean) }; });
@@ -386,7 +409,7 @@ var API = (function () {
     return SB.channel('rounds').on('postgres_changes', { event: '*', schema: 'public', table: 'rounds' }, cb).subscribe();
   }
 
-  return { setStudentRole: setStudentRole, loadFeedback: loadFeedback, postFeedback: postFeedback, setFeedbackStatus: setFeedbackStatus, onFeedback: onFeedback, loadWeeks: loadWeeks, saveWeek: saveWeek, uploadWeekFile: uploadWeekFile, fileUrl: fileUrl, removeWeekFiles: removeWeekFiles, onWeeks: onWeeks, addTeacher: addTeacher, updateTeacher: updateTeacher, removeTeacher: removeTeacher, unlinkedStudents: unlinkedStudents, linkMyStudent: linkMyStudent, roundStatus: roundStatus, getJoinCode: getJoinCode, rotateJoinCode: rotateJoinCode, rotateAdminCode: rotateAdminCode, setStudentAdmin: setStudentAdmin, updateStudent: updateStudent, addStudents: addStudents, saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
+  return { setStudentRole: setStudentRole, loadMyReads: loadMyReads, myRead: myRead, markWeekRead: markWeekRead, weekReaders: weekReaders, onReads: onReads, loadFeedback: loadFeedback, postFeedback: postFeedback, setFeedbackStatus: setFeedbackStatus, onFeedback: onFeedback, loadWeeks: loadWeeks, saveWeek: saveWeek, uploadWeekFile: uploadWeekFile, fileUrl: fileUrl, removeWeekFiles: removeWeekFiles, onWeeks: onWeeks, addTeacher: addTeacher, updateTeacher: updateTeacher, removeTeacher: removeTeacher, unlinkedStudents: unlinkedStudents, linkMyStudent: linkMyStudent, roundStatus: roundStatus, getJoinCode: getJoinCode, rotateJoinCode: rotateJoinCode, rotateAdminCode: rotateAdminCode, setStudentAdmin: setStudentAdmin, updateStudent: updateStudent, addStudents: addStudents, saveMap: saveMap, setDisplayName: setDisplayName, changePassword: changePassword, saveClass: saveClass, addStudent: addStudent, removeStudent: removeStudent, setRemember: setRemember, signIn: signIn, signOut: signOut, session: session, me: me, signUpAdmin: signUpAdmin, freeStudents: freeStudents, signUpStudent: signUpStudent,
     loadClass: loadClass, idOf: idOf, nameOf: nameOf, loadNotifs: loadNotifs, onNotif: onNotif, markRead: markRead, notify: notify,
     saveGroups: saveGroups, loadGroups: loadGroups, createElection: createElection, openRound: openRound, openRounds: openRounds,
     castBallot: castBallot, progress: progress, closeRound: closeRound, saveOutcomes: saveOutcomes, onRounds: onRounds };
