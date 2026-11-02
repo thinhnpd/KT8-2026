@@ -15,11 +15,8 @@
   <script>
     API.session().then(function (s) {
       if (!s) { location.replace('auth/login.html'); return; }
-      /* Tài khoản học sinh có giao diện riêng (chỉ xem cuộc bỏ phiếu hiện tại và bỏ phiếu) */
-      return API.me().then(function (p) {
-        if (p && p.role === 'student') location.replace('bo_phieu/student.html');
-        else document.documentElement.style.visibility = 'visible';
-      });
+      /* Mọi vai trò dùng chung giao diện này: admin sửa mọi thứ, cán sự lớp sửa bản tin tuần, học sinh chỉ xem, bỏ phiếu và gửi góp ý */
+      document.documentElement.style.visibility = 'visible';
     }).catch(function () { location.replace('auth/login.html'); });
   </script>
 

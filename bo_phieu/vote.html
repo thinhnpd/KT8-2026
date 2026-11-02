@@ -91,6 +91,9 @@ input[type=text]{flex:1;min-width:0;height:30px;padding:0 8px;border:1px solid v
 </style>
 <script>if(window.self!==window.top)document.documentElement.classList.add('embed')</script>
 <style>
+.member #side{display:none!important}
+.member .grid{grid-template-columns:minmax(0,1fr)}
+.vt{font-size:15px;font-weight:600;margin:0 0 4px;overflow-wrap:anywhere}
 .embed .sb,.embed .top{display:none!important}
 .embed .mn{margin-left:0!important;padding:0!important;max-width:none!important}
 .embed .app{min-height:0!important}
@@ -119,7 +122,7 @@ html.embed,html.embed body,.embed .app{background:transparent!important}
       <div class="bx"><h5>Bảng bỏ phiếu</h5><div id="board"></div></div>
       <div class="bx" id="hbx" hidden><h5>Kết quả</h5><div id="hist"></div></div>
     </div>
-    <div>
+    <div id="side">
       <div class="bx" id="setup">
         <h5>Luật bỏ phiếu</h5>
         <div class="row"><label for="ttl2">Tên cuộc bầu</label><input id="ttl2" type="text" maxlength="80" autocomplete="off" placeholder="Bỏ phiếu lớp"></div>
@@ -148,6 +151,7 @@ html.embed,html.embed body,.embed .app{background:transparent!important}
     </div>
   </div>
   <dialog id="dlg" aria-labelledby="dt"><div id="dc"></div><div class="btns"><button class="btn" id="dx">Tiếp tục</button></div></dialog>
+  <dialog id="cdlg" aria-labelledby="cdt"><h2 id="cdt" style="margin:0 0 8px;font-size:16px;font-weight:500">Xác nhận bỏ phiếu</h2><p id="cdp"></p><div class="btns"><button class="gh" id="cno" type="button">Chọn lại</button><button class="btn" id="cyes" type="button">Xác nhận</button></div></dialog>
 </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
@@ -163,10 +167,11 @@ const ic=k=>'<svg class="i" viewBox="0 0 24 24"><path d="'+P[k]+'"/></svg>';
 $('clogo').innerHTML=ic('school');
 $('nav').innerHTML=[['cal','Event'],['grid','Class Map'],['award','Class Committee'],['users','Groups'],['clip','Duty Roster'],['chat','Feedback'],['school','Teachers'],['dice','Chia nhóm học tập',0,HUB],['vote','Bỏ phiếu',1]].map(a=>'<a class="it'+(a[2]?' on':'')+'"'+(a[3]?' href="'+a[3]+'"':'')+'>'+ic(a[0])+'<span class="lbl">'+a[1]+'</span></a>').join('');
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e};
-const LOGIN='../auth/login.html',STUDENT='student.html';
+const LOGIN='../auth/login.html';
 const goTo=u=>{(window.top||window).location.replace(u)};
 const NAME={};const nm=id=>NAME[id]||'?';
 let ALL=[],chosen=new Set(),adv=[],lastN=-1,lastR=-1;
+let member=false,mstat='ok';   // member: tài khoản không phải admin (học sinh, cán sự lớp): chỉ xem và bỏ phiếu. mstat: ok | voted | candidate | not_linked | closed
 let E=null,EID=null,mode='setup',orphan=false,voted=false,picked=null,prog={done:0,total:0},busy=false,armed=null,tickT=null;
 const R=()=>Math.max(1,Math.min(6,Math.floor(+$('r').value)||1));
 const ids=()=>ALL.filter(s=>chosen.has(s.id)).map(s=>s.id);
@@ -231,17 +236,18 @@ function updateProg(){
 function renderBoard(){
   const b=$('board');b.textContent='';
   if(mode==='done'&&E&&E.done){const w=el('div','win','Người thắng cuộc');w.appendChild(el('b','nm',nm(E.winner)));b.appendChild(w);return}
-  if(mode==='setup'){b.appendChild(el('div','empty','Thiết lập luật bên phải rồi nhấn "Bắt đầu".'));return}
+  if(mode==='setup'){b.appendChild(el('div','empty',member?'Hiện chưa có cuộc bỏ phiếu nào. Trang tự cập nhật khi lớp mở bỏ phiếu.':'Thiết lập luật bên phải rồi nhấn "Bắt đầu".'));return}
   if(orphan||!E||!E.cur){
-    b.appendChild(el('div','err','Cuộc bầu bị lỗi: không có vòng nào đang mở. Hãy huỷ cuộc bầu rồi tạo lại.'));return}
-  const c=E.cur,fin=E.idx===E.R-1;
+    b.appendChild(el('div','err',member?'Cuộc bầu đang gặp lỗi: chưa có vòng nào mở. Vui lòng báo admin.':'Cuộc bầu bị lỗi: không có vòng nào đang mở. Hãy huỷ cuộc bầu rồi tạo lại.'));return}
+  const c=E.cur,fin=E.idx===E.R-1,canVote=mstat==='ok'||mstat==='voted';
+  if(member&&E.title)b.appendChild(el('p','vt nm',E.title));
   b.append(el('p','bh',c.kind==='mini'?'Vòng phụ (thuộc vòng '+(E.idx+1)+')':'Vòng '+(E.idx+1)+'/'+E.R+(fin?' · vòng cuối':'')),
     el('p','bs',c.kind==='mini'?'Chọn '+c.need+' người trong '+c.ids.length+' người đồng điểm.':fin?'Chọn 1 người thắng cuộc.':'Chọn '+c.need+' người đi tiếp.'));
-  /* Admin bỏ phiếu như mọi tài khoản khác: một phiếu, không sửa được, không nhập số phiếu */
+  /* Mọi tài khoản bỏ phiếu như nhau: một phiếu, không sửa được, không nhập số phiếu */
   const g=el('div','cands');
   c.ids.forEach(id=>{
-    const d=el('label','cand'+(voted?'':' pk')+(picked===id?' sel':''));
-    if(!voted){
+    const d=el('label','cand'+(voted||!canVote?'':' pk')+(picked===id?' sel':''));
+    if(!voted&&canVote){
       const r=el('input');r.type='radio';r.name='mine';r.value=id;r.checked=picked===id;
       r.onchange=()=>{picked=id;g.querySelectorAll('.cand').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');$('send').disabled=busy};
       d.appendChild(r);
@@ -250,14 +256,15 @@ function renderBoard(){
   });
   const mon=el('div','mon'),pr=el('div','');pr.id='prog';pr.style.fontWeight='500';
   const bar=el('div','bar'),bi=el('i');bi.id='pbar';bar.appendChild(bi);
-  mon.append(pr,bar,el('p','note','Số phiếu từng ứng viên chỉ hiện sau khi kết thúc vòng. Admin chỉ bỏ phiếu cho chính mình, không nhập số phiếu.'));
-  const f=el('div','foot'),t=el('span','note',voted?'Bạn đã bỏ phiếu ở vòng này.':'Bạn chưa bỏ phiếu. Chọn một ứng viên rồi gửi phiếu.'),acts=el('span','btns');
+  mon.append(pr,bar,el('p','note',member?'Phiếu kín: số phiếu từng ứng viên chỉ hiện sau khi kết thúc vòng. Phiếu không đổi được sau khi gửi.':'Số phiếu từng ứng viên chỉ hiện sau khi kết thúc vòng. Admin chỉ bỏ phiếu cho chính mình, không nhập số phiếu.'));
+  const why=voted?'Bạn đã bỏ phiếu ở vòng này.':mstat==='candidate'?'Bạn là ứng viên ở vòng này nên không bỏ phiếu được.':mstat==='not_linked'?'Tài khoản của bạn chưa liên kết với tên trong danh sách lớp. Vào Cài đặt để liên kết rồi bỏ phiếu.':'Bạn chưa bỏ phiếu. Chọn một ứng viên rồi gửi phiếu.';
+  const f=el('div','foot'),t=el('span','note',why),acts=el('span','btns');
   acts.style.margin='0';
-  if(!voted){const s=el('button','btn','Gửi phiếu của tôi');s.id='send';s.disabled=picked===null||busy;s.onclick=sendMine;acts.appendChild(s)}
-  const e=el('button',voted?'btn':'gh','Kết thúc vòng');e.id='end';e.onclick=endRound;acts.appendChild(e);
+  if(!voted&&canVote){const s=el('button','btn','Gửi phiếu của tôi');s.id='send';s.disabled=picked===null||busy;s.onclick=member?askSend:sendMine;acts.appendChild(s)}
+  if(!member){const e=el('button',voted?'btn':'gh','Kết thúc vòng');e.id='end';e.onclick=endRound;acts.appendChild(e)}
   f.append(t,acts);b.append(g,mon,f);updateProg();
 }
-function render(){renderSide();renderBoard();renderHist();if(mode==='setup')sync()}
+function render(){renderSide();renderBoard();renderHist();if(mode==='setup'&&!member)sync()}
 function announce(e,w){
   const dc=$('dc');dc.textContent='';
   const h=el('h2','',w!==null?'Kết quả cuối cùng':'Kết quả vừa công bố');h.id='dt';h.style.cssText='margin:0 0 10px;font-size:16px;font-weight:500';
@@ -278,13 +285,17 @@ async function refreshProg(){
 }
 async function load(){
   const cur=await VoteAPI.current();
-  orphan=false;voted=false;picked=null;armed=null;
+  orphan=false;voted=false;mstat='ok';picked=null;armed=null;
   if(cur){
     mode='active';EID=cur.election.id;E=cur.election.state||null;
     if(!E||!E.cur||!cur.round)orphan=true;
     else E.cur.roundId=cur.round.id;   // vòng đang mở trong cơ sở dữ liệu là nguồn đúng
     if(E&&!E.title)E.title=cur.election.title;
-    if(!orphan){voted=await VoteAPI.voted(E.cur.roundId);await refreshProg()}
+    if(!orphan){
+      try{mstat=await API.roundStatus(E.cur.roundId);voted=mstat==='voted'}
+      catch(e){mstat='ok';voted=await VoteAPI.voted(E.cur.roundId)}
+      await refreshProg();
+    }
   }else{
     const f=await VoteAPI.lastFinished();
     if(f){mode='done';E=f.state}else{mode='setup';E=null}
@@ -294,10 +305,23 @@ async function load(){
 }
 async function sendMine(){
   if(busy||picked===null)return;busy=true;$('send').disabled=true;
-  try{await VoteAPI.cast(E.cur.roundId,picked);voted=true}
-  catch(e){if(e.message==='already_voted')voted=true;else{toastErr('Không gửi được phiếu. Hãy thử lại.');busy=false;$('send').disabled=false;return}}
+  try{await VoteAPI.cast(E.cur.roundId,picked);voted=true;mstat='voted'}
+  catch(e){
+    if(e.message==='already_voted'){voted=true;mstat='voted'}
+    else if(e.message==='candidate'){mstat='candidate'}
+    else if(e.message==='unlinked'){mstat='not_linked'}
+    else if(e.message==='closed'||/round_closed/.test(e.message)){busy=false;toastErr('Vòng này vừa kết thúc. Đang cập nhật...');await load();return}
+    else{toastErr('Không gửi được phiếu. Hãy thử lại.');busy=false;$('send').disabled=false;return}
+  }
   busy=false;picked=null;await refreshProg();renderBoard();
 }
+function askSend(){   // tài khoản thường: hỏi lại một lần vì phiếu không đổi được
+  if(busy||picked===null)return;
+  $('cdp').textContent='Bạn bỏ phiếu cho '+nm(picked)+'? Phiếu không thể đổi sau khi gửi.';
+  $('cdlg').showModal();
+}
+$('cno').onclick=()=>$('cdlg').close();
+$('cyes').onclick=()=>{$('cdlg').close();sendMine()};
 function arm(btn,txt,fn){   // bấm hai lần để chắc chắn (tránh bấm nhầm)
   if(armed===btn.id){armed=null;fn();return}
   armed=btn.id;const old=btn.textContent;btn.textContent=txt;btn.disabled=false;
@@ -346,16 +370,27 @@ async function tick(){   // theo dõi: số người đã bỏ phiếu, và phá
   }catch(e){}
 }
 
-/* ---------- Khởi động: chỉ admin mới dùng được trang này ---------- */
+async function memberTick(){   // tài khoản thường: nhận biết vòng mới mở / đóng, cuộc bầu mới bắt đầu hay kết thúc
+  if(busy)return;
+  try{
+    const cur=await VoteAPI.current();
+    const was=mode==='active'&&E&&E.cur?E.cur.roundId:null,now=cur&&cur.round?cur.round.id:null;
+    if(was!==now||(now===null&&mode==='active')){await load();return}
+    if(mode==='active'&&!orphan){await refreshProg();updateProg()}
+  }catch(e){}
+}
+
+/* ---------- Khởi động: admin quản lý cuộc bầu; tài khoản khác (học sinh, cán sự lớp) chỉ xem và bỏ phiếu ---------- */
 (async function init(){
   try{
     const m=await VoteAPI.me();
     if(!m){goTo(LOGIN);return}
-    if(m.role!=='admin'){goTo(STUDENT);return}
+    member=m.role!=='admin';
+    if(member)app.classList.add('member');
     ALL=await VoteAPI.students();ALL.forEach(s=>NAME[s.id]=s.name);
-    buildList();
+    if(!member)buildList();
     await load();
-    tickT=VoteAPI.watch(tick,4000);
+    tickT=VoteAPI.watch(member?memberTick:tick,member?5000:4000);
   }catch(e){
     console.error('[vote] init',e);
     $('board').textContent='';$('board').appendChild(el('div','err','Không tải được dữ liệu bỏ phiếu. Vui lòng tải lại trang.'));

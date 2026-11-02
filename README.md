@@ -59,15 +59,16 @@ core/config → utils → icons → data/* → core/state → components/* → p
 - Admin chọn vai trò trong hộp **Chỉnh sửa thành viên** (Danh bạ), ô "Vai trò trong lớp" là danh sách chọn Admin / Cán sự lớp / Thành viên. Học sinh chưa có tài khoản sẽ nhận đúng vai trò đó khi đăng ký. Vai trò mới có hiệu lực khi người đó tải lại trang.
 - **Chạy `sql/update-14.sql` một lần** trong Supabase > SQL Editor (sau `update-5.sql`, `update-10.sql`, `update-11.sql`). Quyền ghi bản tin tuần của cán sự lớp được chặn ở máy chủ (RLS) chứ không chỉ ẩn nút trên giao diện.
 
-## Bỏ phiếu trực tuyến (admin theo dõi, học sinh bỏ phiếu)
-- **Học sinh** đăng nhập sẽ vào thẳng `bo_phieu/student.html`: chỉ xem cuộc bỏ phiếu đang diễn ra và gửi một phiếu mỗi vòng (phiếu kín, không đổi được). Các trang khác của lớp không mở được với tài khoản học sinh.
-- **Admin** dùng `bo_phieu/vote.html` (nhúng trong trang Bỏ phiếu): chọn ứng viên từ danh sách lớp, đặt số vòng, rồi bắt đầu. Trong lúc bỏ phiếu admin chỉ bỏ phiếu cho chính mình và theo dõi số người đã bỏ phiếu; không nhập số phiếu. Số phiếu do máy chủ đếm khi admin kết thúc vòng (`close_round`), rồi luật đi tiếp / vòng phụ khi đồng điểm áp dụng như trước.
+## Bỏ phiếu trực tuyến (admin điều hành, mọi tài khoản khác bỏ phiếu)
+- **Học sinh và cán sự lớp** dùng chung giao diện chính với admin, các trang đều mở được nhưng chủ yếu **chỉ xem**. Họ chỉ được **bỏ phiếu** (trang Bỏ phiếu: xem cuộc bỏ phiếu đang diễn ra và gửi một phiếu mỗi vòng, phiếu kín, hỏi lại một lần vì không đổi được) và **gửi góp ý** (trang Góp ý). Học sinh là ứng viên của vòng đó thì không bỏ phiếu được; tài khoản chưa liên kết với tên trong danh sách lớp sẽ được hướng dẫn liên kết trong Cài đặt. Cán sự lớp có thêm quyền sửa bản tin tuần. Còn lại (sơ đồ, danh bạ, nhóm, cài đặt lớp, điều hành bầu cử) chỉ admin sửa được, và máy chủ cũng chặn như vậy.
+- `bo_phieu/student.html` không còn là trang riêng: chỉ chuyển hướng về trang Bỏ phiếu của giao diện chính để dấu trang cũ vẫn dùng được. Sau đăng nhập, mọi vai trò vào `index.html`.
+- **Admin** dùng đầy đủ `bo_phieu/vote.html` (nhúng trong trang Bỏ phiếu; với tài khoản khác trang này tự chuyển sang chế độ chỉ bỏ phiếu): chọn ứng viên từ danh sách lớp, đặt số vòng, rồi bắt đầu. Trong lúc bỏ phiếu admin chỉ bỏ phiếu cho chính mình và theo dõi số người đã bỏ phiếu; không nhập số phiếu. Số phiếu do máy chủ đếm khi admin kết thúc vòng (`close_round`), rồi luật đi tiếp / vòng phụ khi đồng điểm áp dụng như trước.
 - Mã: `js/data/vote-logic.js` (luật vòng, không cần mạng), `js/data/vote-api.js` (Supabase).
 - Cơ sở dữ liệu: cài mới dùng `sql/schema.sql`; nếu đã cài trước đó, chạy thêm `sql/update-6.sql` một lần.
 
 ## Tạo tài khoản học sinh hàng loạt (admin)
 - Cài đặt > **Tài khoản học sinh** > "Tạo tài khoản hàng loạt". Tạo tài khoản cho mọi học sinh trong danh sách lớp, **bỏ qua** admin (tài khoản admin, hoặc người giữ chức vụ admin trong ban cán sự) và học sinh đã có tài khoản.
-- Tên đăng nhập gợi ý theo quy ước tên + chữ cái đầu họ và tên đệm (Nguyễn Văn Ánh -> `anhnv`), sửa được trước khi tạo. Mật khẩu ngẫu nhiên 8 ký tự chỉ hiện một lần; tải file CSV để phát cho học sinh. Học sinh đổi mật khẩu ngay trong giao diện bỏ phiếu.
+- Tên đăng nhập gợi ý theo quy ước tên + chữ cái đầu họ và tên đệm (Nguyễn Văn Ánh -> `anhnv`), sửa được trước khi tạo. Mật khẩu ngẫu nhiên 8 ký tự chỉ hiện một lần; tải file CSV để phát cho học sinh. Học sinh đổi mật khẩu trong Cài đặt > Tài khoản.
 - Không dùng khóa service_role: trình duyệt admin tạo từng tài khoản bằng một kết nối phụ (không đổi phiên của admin), rồi gọi `admin_link_student` để gắn vào đúng học sinh. Cài mới dùng `sql/schema.sql`; nếu đã cài trước đó, chạy thêm `sql/update-7.sql`.
 - Supabase giới hạn số lần đăng ký trong một khoảng thời gian; khi chạm giới hạn, công cụ tự chờ rồi tiếp tục. Lớp đông có thể tăng giới hạn ở Authentication > Rate Limits.
 - Mã: `js/data/account-logic.js` (tên đăng nhập, mật khẩu, phân loại), `js/data/accounts-api.js`, `js/pages/accounts.js`.

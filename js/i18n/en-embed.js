@@ -105,7 +105,18 @@
       'Không gửi được phiếu. Hãy thử lại.': 'Could not send your vote. Please try again.',
       'Không huỷ được. Hãy thử lại.': 'Could not cancel. Please try again.',
       'Không thực hiện được. Đang tải lại trạng thái.': 'Could not complete that. Reloading the state.',
-      'Không tải được dữ liệu bỏ phiếu. Vui lòng tải lại trang.': 'Could not load voting data. Please reload the page.'
+      'Không tải được dữ liệu bỏ phiếu. Vui lòng tải lại trang.': 'Could not load voting data. Please reload the page.',
+
+      /* ---- Bỏ phiếu: tài khoản thường (học sinh, cán sự lớp) ---- */
+      'Hiện chưa có cuộc bỏ phiếu nào. Trang tự cập nhật khi lớp mở bỏ phiếu.': 'There is no vote right now. This page updates by itself when your class opens a vote.',
+      'Cuộc bầu đang gặp lỗi: chưa có vòng nào mở. Vui lòng báo admin.': 'This vote is broken: no round is open. Please tell an admin.',
+      'Phiếu kín: số phiếu từng ứng viên chỉ hiện sau khi kết thúc vòng. Phiếu không đổi được sau khi gửi.': 'Secret ballot: votes per candidate only appear after the round ends. A vote cannot be changed once sent.',
+      'Bạn là ứng viên ở vòng này nên không bỏ phiếu được.': 'You are a candidate in this round, so you cannot vote in it.',
+      'Tài khoản của bạn chưa liên kết với tên trong danh sách lớp. Vào Cài đặt để liên kết rồi bỏ phiếu.': 'Your account is not linked to a name on the class list. Link it in Settings, then vote.',
+      'Vòng này vừa kết thúc. Đang cập nhật...': 'This round just ended. Updating...',
+      'Xác nhận bỏ phiếu': 'Confirm your vote',
+      'Chọn lại': 'Go back',
+      'Xác nhận': 'Confirm'
     },
     rules: [
       [/^Môn này đã có bộ nhóm \((\d+) nhóm\)\. Lưu bộ mới sẽ thay thế bộ cũ\.$/, 'This subject already has a group set ($1 groups). Saving a new one will replace it.'],
@@ -148,6 +159,7 @@
       [/^Kết quả vòng (\d+)\/(\d+)$/, 'Round $1/$2 results'],
       [/^(\d+) phiếu$/, function (m, n) { return n + n1(n, ' vote', ' votes'); }],
       [/^Người thắng cuộc: (.+)\.$/, 'Winner: $1.'],
+      [/^Bạn bỏ phiếu cho (.+)\? Phiếu không thể đổi sau khi gửi\.$/, 'Vote for $1? You cannot change it after sending.'],
       [/^Đi tiếp vòng (\d+): (.+)\.$/, 'Moving on to round $1: $2.'],
       [/^Đồng điểm ở vị trí cuối: (.+) \((\d+) phiếu\)\. Cần vòng phụ để chọn (\d+) người\.$/,
         function (m, names, v, k) { return 'Tied for the last spot: ' + names + ' (' + v + n1(v, ' vote', ' votes') + '). A tie-break round is needed to choose ' + k + ' of them.'; }]

@@ -1,8 +1,7 @@
 /* Trang đăng nhập: đổi giao diện, đổi ngôn ngữ, kiểm tra dữ liệu, gửi đăng nhập. */
 (() => {
   // ===== Cấu hình =====
-  const NEXT_URL = '../index.html';        // trang chuyển tới sau khi đăng nhập thành công (admin)
-  const STUDENT_URL = '../bo_phieu/student.html';   // giao diện riêng của tài khoản học sinh
+  const NEXT_URL = '../index.html';        // trang chuyển tới sau khi đăng nhập thành công (mọi vai trò)
   const THEME_KEY = 'theme';            // đổi cho khớp khóa mà js/components/theme.js đang dùng
   const LANG_KEY = 'sclass.lang';       // khóa của js/i18n/engine.js: đổi ngôn ngữ ở đây cũng áp dụng cho trang chủ
   
@@ -83,10 +82,8 @@
     await API.signIn(username, password);
   }
 
-  // Admin vào giao diện đầy đủ; học sinh chỉ vào trang bỏ phiếu
-  async function homeFor() {
-    try { const p = await API.me(); return p && p.role === 'student' ? STUDENT_URL : NEXT_URL; } catch (e) { return NEXT_URL; }
-  }
+  // Mọi vai trò vào cùng một giao diện (quyền chỉnh sửa khác nhau theo vai trò, máy chủ kiểm tra lại)
+  async function homeFor() { return NEXT_URL; }
 
   function fail(msg, field) {
     $('err').textContent = msg;
